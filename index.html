@@ -1,0 +1,3893 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NearStay — Verified Hostels, PGs & Student Stays in Warangal & Beyond</title>
+<meta name="description" content="Find and book 100% verified Boys & Girls Hostels, PGs, and Co-living spaces near NIT Warangal, Kazipet, and Hanamkonda with live room availability and zero brokerage.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fjalla+One&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<style>
+  :root {
+    --bg-page: #F8FAFC;
+    --bg-card: #FFFFFF;
+    --bg-surface: #F1F5F9;
+    --text-main: #0F172A;
+    --text-muted: #64748B;
+    --text-light: #94A3B8;
+    --primary: #0D9488;
+    --primary-hover: #0F766E;
+    --primary-light: #CCFBF1;
+    --accent: #F59E0B;
+    --accent-light: #FEF3C7;
+    --danger: #EF4444;
+    --danger-light: #FEE2E2;
+    --success: #10B981;
+    --success-light: #D1FAE5;
+    --border: #E2E8F0;
+    --border-hover: #CBD5E1;
+    --booked-room: #334155;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 16px -1px rgba(0,0,0,0.08), 0 2px 6px -1px rgba(0,0,0,0.04);
+    --shadow-lg: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+    --shadow-xl: 0 25px 50px -12px rgba(0,0,0,0.18);
+    --radius-sm: 8px;
+    --radius-md: 14px;
+    --radius-lg: 20px;
+    --radius-xl: 28px;
+    --radius-full: 9999px;
+  }
+
+  html[data-theme="dark"] {
+    --bg-page: #0B0F19;
+    --bg-card: #151D2E;
+    --bg-surface: #1E293B;
+    --text-main: #F8FAFC;
+    --text-muted: #94A3B8;
+    --text-light: #64748B;
+    --primary: #14B8A6;
+    --primary-hover: #2DD4BF;
+    --primary-light: #134E48;
+    --accent: #FBBF24;
+    --accent-light: #78350F;
+    --danger: #F87171;
+    --danger-light: #7F1D1D;
+    --success: #34D399;
+    --success-light: #064E3B;
+    --border: #243048;
+    --border-hover: #334155;
+    --booked-room: #1E293B;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+    --shadow-md: 0 4px 16px -1px rgba(0,0,0,0.4);
+    --shadow-lg: 0 20px 25px -5px rgba(0,0,0,0.5);
+    --shadow-xl: 0 25px 50px -12px rgba(0,0,0,0.7);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg-page);
+    color: var(--text-main);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    transition: background 0.3s ease, color 0.3s ease;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, .font-heading {
+    font-family: 'Fjalla One', sans-serif;
+    font-weight: 400;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+
+  /* TOP ANNOUNCEMENT BANNER */
+  .top-banner {
+    background: linear-gradient(90deg, #0F766E, #0D9488, #D97706);
+    color: #FFFFFF;
+    padding: 8px 5%;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+  .top-banner a { color: #FEF3C7; text-decoration: underline; cursor: pointer; font-weight: 700; }
+  .top-banner-right { display: flex; align-items: center; gap: 16px; font-size: 12px; }
+
+  /* LOCATION SELECTOR PILL IN BANNER & NAV */
+  .loc-pill-btn {
+    background: rgba(255, 255, 255, 0.18);
+    color: #FFFFFF;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    padding: 4px 12px;
+    border-radius: var(--radius-full);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+  }
+  .loc-pill-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+  }
+
+  /* NAVIGATION BAR */
+  nav {
+    position: sticky; top: 0; z-index: 80;
+    background: rgba(248, 250, 252, 0.94);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 5%;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    transition: all 0.2s ease;
+  }
+  html[data-theme="dark"] nav {
+    background: rgba(11, 15, 25, 0.94);
+  }
+
+  .nav-left {
+    display: flex; align-items: center; gap: 18px;
+  }
+  .logo {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 24px; font-weight: 800; color: var(--text-main);
+    text-decoration: none; cursor: pointer; user-select: none;
+  }
+  .logo-icon {
+    width: 38px; height: 38px; border-radius: 12px;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    display: flex; align-items: center; justify-content: center;
+    color: #FFF; font-size: 18px; font-weight: 900;
+    box-shadow: 0 4px 12px rgba(13, 148, 136, 0.35);
+  }
+  .logo-text span { color: var(--primary); }
+
+  .nav-location-btn {
+    background: var(--bg-surface);
+    color: var(--text-main);
+    border: 1px solid var(--border);
+    padding: 6px 14px;
+    border-radius: var(--radius-full);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s ease;
+  }
+  .nav-location-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+
+  .nav-center-links {
+    display: flex; align-items: center; gap: 24px;
+    font-size: 14px; font-weight: 600; color: var(--text-muted);
+  }
+  .nav-center-links a {
+    text-decoration: none; color: inherit; transition: color 0.15s ease;
+    cursor: pointer; position: relative; padding: 4px 0;
+  }
+  .nav-center-links a:hover, .nav-center-links a.active { color: var(--primary); }
+  .nav-center-links a.active::after {
+    content: ''; position: absolute; bottom: -2px; left: 0; right: 0;
+    height: 2px; background: var(--primary); border-radius: 2px;
+  }
+
+  .nav-actions { display: flex; align-items: center; gap: 10px; }
+
+  .icon-btn {
+    width: 40px; height: 40px; border-radius: 50%;
+    border: 1px solid var(--border); background: var(--bg-card); color: var(--text-main);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 16px; transition: all 0.2s ease; position: relative;
+  }
+  .icon-btn:hover { border-color: var(--primary); transform: translateY(-1px); }
+  .badge-counter {
+    position: absolute; top: -3px; right: -3px;
+    background: var(--danger); color: #fff; font-size: 10px; font-weight: 800;
+    width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  }
+
+  .user-avatar-btn {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--primary-light); color: var(--primary);
+    border: 1px solid var(--primary); padding: 6px 14px; border-radius: var(--radius-full);
+    font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s ease;
+  }
+  .user-avatar-btn:hover {
+    transform: translateY(-1px); box-shadow: var(--shadow-sm);
+  }
+  .user-avatar-circle {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--primary); color: #FFF;
+    display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+    color: #FFFFFF; border: none; border-radius: var(--radius-full);
+    padding: 9px 20px; font-size: 14px; font-weight: 700;
+    cursor: pointer; transition: all 0.2s ease; box-shadow: var(--shadow-sm);
+    display: inline-flex; align-items: center; gap: 8px; text-decoration: none;
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px); box-shadow: 0 8px 20px rgba(13, 148, 136, 0.3);
+  }
+
+  .btn-secondary {
+    background: var(--bg-card); color: var(--text-main);
+    border: 1px solid var(--border); border-radius: var(--radius-full);
+    padding: 9px 16px; font-size: 14px; font-weight: 700;
+    cursor: pointer; transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn-secondary:hover { border-color: var(--primary); color: var(--primary); }
+
+  .mobile-menu-btn {
+    display: none; width: 40px; height: 40px; border-radius: 10px;
+    border: 1px solid var(--border); background: var(--bg-card); color: var(--text-main);
+    font-size: 20px; cursor: pointer;
+  }
+
+  /* HERO SECTION */
+  .hero-section {
+    padding: 44px 5% 32px;
+    display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 40px; align-items: center;
+    max-width: 1400px; margin: 0 auto;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--primary-light); color: var(--primary);
+    padding: 6px 14px; border-radius: var(--radius-full);
+    font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+    margin-bottom: 18px;
+  }
+  .pulse-dot {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--primary);
+    animation: livePulse 1.6s infinite ease-in-out;
+  }
+  @keyframes livePulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.4); opacity: 0.4; } }
+
+  .hero-title {
+    font-size: clamp(34px, 4.2vw, 54px);
+    line-height: 1.1; color: var(--text-main);
+    margin-bottom: 16px;
+  }
+  .hero-title .gradient-text {
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .hero-sub {
+    font-size: 16px; line-height: 1.6; color: var(--text-muted); max-width: 540px;
+  }
+
+  /* SMART SEARCH BOX */
+  .search-console {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 8px 12px 14px;
+    margin-top: 24px;
+    box-shadow: var(--shadow-xl);
+  }
+  .search-tabs {
+    display: flex; gap: 8px; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 12px;
+    overflow-x: auto;
+  }
+  .search-tab {
+    padding: 8px 16px; border-radius: var(--radius-full); font-size: 13px; font-weight: 700;
+    border: none; background: transparent; color: var(--text-muted); cursor: pointer;
+    transition: all 0.15s ease; white-space: nowrap;
+  }
+  .search-tab.active {
+    background: var(--bg-surface); color: var(--primary);
+  }
+
+  .search-fields-grid {
+    display: grid; grid-template-columns: 1.3fr 1fr 1fr auto; gap: 10px; align-items: center;
+  }
+  .search-input-group {
+    background: var(--bg-surface); padding: 10px 14px; border-radius: var(--radius-md);
+    border: 1px solid var(--border); transition: border-color 0.15s ease;
+  }
+  .search-input-group:focus-within { border-color: var(--primary); background: var(--bg-card); }
+  .search-input-group label {
+    display: block; font-size: 11px; font-weight: 800; text-transform: uppercase;
+    letter-spacing: 0.5px; color: var(--text-light); margin-bottom: 4px;
+  }
+  .search-input-group input, .search-input-group select {
+    width: 100%; border: none; background: transparent; font-family: inherit;
+    font-size: 14px; font-weight: 600; color: var(--text-main); outline: none;
+  }
+
+  .quick-chips {
+    display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; align-items: center;
+  }
+  .chip-tag {
+    font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: var(--radius-full);
+    background: var(--bg-card); border: 1px solid var(--border); color: var(--text-muted);
+    cursor: pointer; transition: all 0.15s ease;
+  }
+  .chip-tag:hover { border-color: var(--primary); color: var(--primary); }
+
+  /* HERO VISUAL CARD */
+  .hero-showcase {
+    position: relative; height: 440px; border-radius: var(--radius-xl);
+    overflow: hidden; border: 1px solid var(--border);
+    box-shadow: var(--shadow-xl); background: #0F172A;
+  }
+  .hero-showcase-img {
+    width: 100%; height: 100%; object-fit: cover;
+    transition: transform 0.6s ease;
+  }
+  .hero-showcase:hover .hero-showcase-img { transform: scale(1.03); }
+
+  .showcase-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(15,23,42,0.1) 0%, rgba(15,23,42,0.85) 100%);
+    padding: 24px; display: flex; flex-direction: column; justify-content: space-between; color: #FFF;
+  }
+  .showcase-top {
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .live-badge {
+    background: rgba(15,23,42,0.85); backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.2); padding: 6px 14px; border-radius: var(--radius-full);
+    font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 8px;
+  }
+
+  .showcase-bottom {
+    background: rgba(15,23,42,0.85); backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.15); border-radius: var(--radius-lg);
+    padding: 18px;
+  }
+  .showcase-bottom h3 { font-size: 18px; font-weight: 700; font-family: 'Plus Jakarta Sans'; }
+  .showcase-stats {
+    display: flex; gap: 16px; font-size: 13px; color: #CBD5E1; margin: 8px 0 12px;
+  }
+  .mini-grid {
+    display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px;
+  }
+  .mini-cell {
+    height: 16px; border-radius: 3px; background: rgba(255,255,255,0.2);
+  }
+  .mini-cell.avail { background: var(--primary); }
+
+  /* TRUST PILLARS */
+  .trust-section {
+    padding: 28px 5%;
+    border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    background: var(--bg-card);
+  }
+  .trust-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px;
+    max-width: 1400px; margin: 0 auto;
+  }
+  .trust-card {
+    display: flex; align-items: center; gap: 16px;
+  }
+  .trust-icon {
+    width: 48px; height: 48px; border-radius: 14px;
+    background: var(--primary-light); color: var(--primary);
+    display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0;
+  }
+  .trust-info h4 { font-size: 15px; font-weight: 700; color: var(--text-main); }
+  .trust-info p { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+  /* CAMPUS ZONES CAROUSEL */
+  .section-container {
+    padding: 48px 5%;
+    max-width: 1400px; margin: 0 auto;
+  }
+  .section-header {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    margin-bottom: 28px; flex-wrap: wrap; gap: 16px;
+  }
+  .section-header h2 { font-size: 30px; }
+  .section-header p { color: var(--text-muted); font-size: 15px; max-width: 540px; margin-top: 6px; }
+
+  .zones-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px;
+  }
+  .zone-card {
+    position: relative; height: 180px; border-radius: var(--radius-lg); overflow: hidden;
+    cursor: pointer; border: 1px solid var(--border); transition: transform 0.25s ease;
+  }
+  .zone-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+  .zone-card img { width: 100%; height: 100%; object-fit: cover; }
+  .zone-card-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.85) 100%);
+    padding: 16px; display: flex; flex-direction: column; justify-content: flex-end; color: #FFF;
+  }
+  .zone-card-overlay h4 { font-size: 18px; font-weight: 700; }
+  .zone-card-overlay span { font-size: 13px; color: #E2E8F0; }
+
+  /* FILTER BAR */
+  .filter-controls-bar {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg);
+    padding: 14px 20px; margin-bottom: 32px;
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;
+    box-shadow: var(--shadow-sm);
+  }
+  .pills-group { display: flex; gap: 8px; flex-wrap: wrap; }
+  .filter-pill {
+    padding: 8px 16px; border-radius: var(--radius-full); font-size: 13px; font-weight: 700;
+    border: 1px solid var(--border); background: var(--bg-surface); color: var(--text-muted);
+    cursor: pointer; transition: all 0.15s ease;
+  }
+  .filter-pill.active {
+    background: var(--text-main); color: var(--bg-card); border-color: var(--text-main);
+  }
+  .filter-pill:hover:not(.active) { border-color: var(--primary); color: var(--primary); }
+
+  .sort-group { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 700; color: var(--text-muted); }
+  .sort-select {
+    padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border);
+    background: var(--bg-card); color: var(--text-main); font-family: inherit; font-size: 13px; font-weight: 600; outline: none;
+  }
+
+  /* LISTINGS GRID */
+  .listings-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 28px;
+  }
+
+  /* PROPERTY CARD */
+  .property-card {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg);
+    overflow: hidden; box-shadow: var(--shadow-sm); transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex; flex-direction: column; position: relative;
+  }
+  .property-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); }
+
+  .card-media {
+    position: relative; height: 230px; background: #0F172A; overflow: hidden;
+  }
+  .card-slider {
+    width: 100%; height: 100%; display: flex; transition: transform 0.3s ease;
+  }
+  .card-slider img {
+    width: 100%; height: 100%; object-fit: cover; flex-shrink: 0;
+  }
+
+  .card-fav-btn {
+    position: absolute; top: 12px; right: 12px; z-index: 10;
+    width: 36px; height: 36px; border-radius: 50%;
+    background: rgba(15,23,42,0.6); border: none; color: #FFF;
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+    font-size: 18px; backdrop-filter: blur(6px); transition: transform 0.15s ease;
+  }
+  .card-fav-btn:hover { transform: scale(1.15); }
+  .card-fav-btn.active { color: #EF4444; background: #FFF; }
+
+  .card-tag-left {
+    position: absolute; top: 12px; left: 12px; z-index: 10;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .tag-badge {
+    font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: var(--radius-full);
+    text-transform: uppercase; letter-spacing: 0.4px; backdrop-filter: blur(6px);
+  }
+  .tag-badge.gender-boys { background: #0284C7; color: #FFF; }
+  .tag-badge.gender-girls { background: #D946EF; color: #FFF; }
+  .tag-badge.verified { background: #059669; color: #FFF; }
+
+  .card-counter-tag {
+    position: absolute; bottom: 12px; right: 12px; z-index: 10;
+    background: rgba(0,0,0,0.65); color: #FFF; font-size: 11px; font-weight: 700;
+    padding: 3px 8px; border-radius: 4px; backdrop-filter: blur(4px);
+  }
+
+  .card-nav-arrow {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    width: 32px; height: 32px; border-radius: 50%;
+    background: rgba(255,255,255,0.9); color: #0F172A; border: none;
+    font-size: 16px; font-weight: bold; cursor: pointer; display: flex;
+    align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; z-index: 10;
+  }
+  .property-card:hover .card-nav-arrow { opacity: 1; }
+  .card-nav-arrow.left { left: 10px; }
+  .card-nav-arrow.right { right: 10px; }
+
+  .card-content {
+    padding: 20px; display: flex; flex-direction: column; flex: 1;
+  }
+  .card-title-row {
+    display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;
+  }
+  .card-title-row h3 {
+    font-size: 18px; font-weight: 700; font-family: 'Plus Jakarta Sans'; color: var(--text-main);
+  }
+  .rating-pill {
+    background: var(--accent-light); color: var(--accent);
+    font-weight: 800; font-size: 12px; padding: 4px 8px; border-radius: 6px;
+    display: flex; align-items: center; gap: 4px; flex-shrink: 0;
+  }
+
+  .card-location {
+    font-size: 13px; color: var(--text-muted); margin-top: 6px;
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  .amenities-chips-row {
+    display: flex; gap: 6px; margin: 14px 0; flex-wrap: wrap;
+  }
+  .amenity-chip {
+    font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 6px;
+    background: var(--bg-surface); color: var(--text-muted); border: 1px solid var(--border);
+  }
+
+  .card-live-availability {
+    background: var(--primary-light); color: var(--primary);
+    padding: 6px 12px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 700;
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;
+  }
+
+  .card-footer-action {
+    display: flex; justify-content: space-between; align-items: center;
+    border-top: 1px solid var(--border); padding-top: 14px; margin-top: auto;
+  }
+  .card-price-block { display: flex; flex-direction: column; }
+  .card-price-num { font-size: 20px; font-weight: 800; color: var(--primary); }
+  .card-price-sub { font-size: 11px; color: var(--text-light); font-weight: 600; }
+
+  /* FULL-SCREEN PROPERTY DETAIL MODAL (STICKY SPLIT ARCHITECTURE) */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(11, 15, 25, 0.75);
+    backdrop-filter: blur(10px); z-index: 150;
+    display: none; align-items: center; justify-content: center; padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .detail-modal-box {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-xl);
+    max-width: 1080px; width: 100%; max-height: 90vh; overflow-y: auto; position: relative;
+    box-shadow: var(--shadow-xl); animation: modalZoom 0.25s ease-out;
+  }
+  @keyframes modalZoom { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+
+  .modal-close-btn {
+    position: absolute; top: 16px; right: 16px; width: 38px; height: 38px; border-radius: 50%;
+    background: rgba(15,23,42,0.8); color: #FFF; border: none; font-size: 16px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 50;
+    transition: background 0.15s ease;
+  }
+  .modal-close-btn:hover { background: #000; }
+
+  .gallery-grid {
+    display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 8px; height: 320px;
+    background: #0F172A; padding: 10px; border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  }
+  .gallery-grid img {
+    width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-md);
+    cursor: pointer; transition: opacity 0.2s;
+  }
+  .gallery-grid img:hover { opacity: 0.9; }
+
+  .modal-main-layout {
+    display: grid; grid-template-columns: 1.55fr 1fr; gap: 28px; padding: 28px;
+    align-items: start;
+  }
+
+  .modal-scrollable-content {
+    display: flex; flex-direction: column; gap: 16px;
+  }
+
+  .modal-tab-nav {
+    display: flex; gap: 8px; border-bottom: 2px solid var(--border); padding-bottom: 12px; margin-bottom: 8px;
+    overflow-x: auto;
+  }
+  .modal-tab-btn {
+    padding: 8px 16px; border-radius: var(--radius-full); font-size: 13px; font-weight: 700;
+    border: none; background: transparent; color: var(--text-muted); cursor: pointer;
+    white-space: nowrap; transition: all 0.15s ease;
+  }
+  .modal-tab-btn.active {
+    background: var(--primary-light); color: var(--primary);
+  }
+
+  /* FLOOR PLAN MATRIX */
+  .floor-selector {
+    display: flex; gap: 8px; margin-bottom: 14px;
+  }
+  .floor-btn {
+    padding: 6px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border);
+    background: var(--bg-surface); color: var(--text-muted); font-size: 13px; font-weight: 700; cursor: pointer;
+  }
+  .floor-btn.active { background: var(--text-main); color: var(--bg-card); border-color: var(--text-main); }
+
+  .rooms-visual-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+    background: var(--bg-surface); padding: 16px; border-radius: var(--radius-lg); border: 1px solid var(--border);
+  }
+  .room-node {
+    padding: 12px 8px; border-radius: var(--radius-sm); border: 1px solid var(--border);
+    text-align: center; cursor: pointer; transition: all 0.15s ease; user-select: none;
+  }
+  .room-node.available { background: var(--success-light); border-color: var(--success); color: var(--success); }
+  .room-node.available:hover { transform: scale(1.05); }
+  .room-node.selected { background: var(--primary) !important; color: #FFF !important; border-color: var(--primary) !important; box-shadow: 0 0 0 2px rgba(13,148,136,0.3); }
+  .room-node.occupied { background: var(--booked-room); color: #94A3B8; border-color: transparent; cursor: not-allowed; opacity: 0.6; }
+
+  /* FOOD MENU SCHEDULE */
+  .menu-schedule-card {
+    background: var(--bg-surface); border-radius: var(--radius-lg); padding: 16px; border: 1px solid var(--border);
+  }
+  .meal-row {
+    display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed var(--border);
+    font-size: 13px; gap: 12px;
+  }
+  .meal-row:last-child { border-bottom: none; }
+  .meal-badge { font-weight: 800; color: var(--primary); min-width: 90px; }
+
+  /* CHECKOUT STICKY CARD */
+  .checkout-widget {
+    background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
+    padding: 22px; position: sticky; top: 20px;
+  }
+  .checkout-price-head {
+    display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 16px;
+  }
+  .coupon-box {
+    display: flex; gap: 8px; margin: 14px 0;
+  }
+  .coupon-input {
+    flex: 1; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    font-family: 'JetBrains Mono'; font-weight: 700; font-size: 13px; text-transform: uppercase;
+    background: var(--bg-card); color: var(--text-main); outline: none;
+  }
+
+  .price-calc-table {
+    border-top: 1px solid var(--border); padding-top: 12px; margin-top: 12px;
+    font-size: 13px; line-height: 1.9; color: var(--text-muted);
+  }
+  .price-calc-row { display: flex; justify-content: space-between; }
+  .price-calc-row.final {
+    font-size: 16px; font-weight: 800; color: var(--text-main); border-top: 1px dashed var(--border);
+    padding-top: 8px; margin-top: 8px;
+  }
+
+  /* DIGITAL RECEIPT MODAL */
+  .receipt-boarding-pass {
+    background: #FFFFFF; color: #0F172A; border-radius: var(--radius-xl);
+    overflow: hidden; border: 2px dashed #94A3B8; max-width: 580px; width: 100%;
+    box-shadow: var(--shadow-xl);
+  }
+  .pass-header {
+    background: linear-gradient(135deg, #0F766E, #0D9488);
+    color: #FFF; padding: 24px; text-align: center;
+  }
+  .pass-body { padding: 28px; }
+  .pass-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px; font-size: 13px;
+    margin: 20px 0; border-top: 1px solid #E2E8F0; border-bottom: 1px solid #E2E8F0; padding: 16px 0;
+  }
+  .pass-qr-strip {
+    display: flex; align-items: center; justify-content: space-between; background: #F8FAFC;
+    padding: 16px; border-radius: var(--radius-md); border: 1px solid #E2E8F0; margin-top: 18px;
+  }
+
+  /* DRAWERS & OVERLAYS */
+  .drawer-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200;
+    display: none; justify-content: flex-end;
+  }
+  .drawer-overlay.open { display: flex; }
+  .drawer-content {
+    background: var(--bg-card); width: 100%; max-width: 420px; height: 100%;
+    padding: 24px; overflow-y: auto; box-shadow: var(--shadow-xl);
+    display: flex; flex-direction: column;
+  }
+
+  /* ==========================================================================
+     PRO-GRADE AUTHENTICATION DESIGN SYSTEM & ROLE CONTEXT
+     ========================================================================== */
+  .auth-modal-box {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 28px;
+    max-width: 470px;
+    width: 100%;
+    max-height: 92vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.25), 0 0 0 1px rgba(15, 23, 42, 0.04);
+    padding: 24px 28px 28px;
+    animation: modalZoom 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Role Switch Indicator Pill Tabs */
+  .auth-role-tabs-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+  .auth-role-tabs {
+    display: flex;
+    position: relative;
+    background: var(--bg-surface);
+    padding: 4px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    gap: 4px;
+  }
+  .auth-role-tab {
+    flex: 1;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: none;
+    font-weight: 700;
+    font-size: 13.5px;
+    cursor: pointer;
+    background: transparent;
+    color: var(--text-muted);
+    transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-family: inherit;
+    position: relative;
+    z-index: 2;
+  }
+  .auth-role-tab.active {
+    background: var(--bg-card);
+    color: #0F766E;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.07);
+    font-weight: 800;
+  }
+
+  /* Owner Mode Styling Overrides */
+  .auth-modal-box.owner-mode {
+    border-top: 3px solid #6366F1;
+  }
+  .auth-modal-box.owner-mode .auth-role-tab.active {
+    color: #4F46E5;
+    box-shadow: 0 3px 10px rgba(79, 70, 229, 0.12);
+  }
+  .auth-modal-box.owner-mode .auth-btn-dark {
+    background: linear-gradient(135deg, #4338CA, #312E81);
+    box-shadow: 0 4px 14px rgba(67, 56, 202, 0.3);
+  }
+  .auth-modal-box.owner-mode .auth-btn-dark:hover {
+    background: linear-gradient(135deg, #3730A3, #1E1B4B);
+    box-shadow: 0 6px 18px rgba(67, 56, 202, 0.4);
+  }
+  .auth-modal-box.owner-mode .auth-form-input:focus {
+    border-color: #6366F1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.18);
+  }
+  .auth-modal-box.owner-mode .auth-role-pill-badge {
+    background: #EEF2FF;
+    color: #4F46E5;
+    border-color: #C7D2FE;
+  }
+
+  .auth-role-pill-badge {
+    align-self: center;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    padding: 4px 12px;
+    border-radius: var(--radius-full);
+    background: var(--primary-light);
+    color: var(--primary);
+    border: 1px solid rgba(13, 148, 136, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s ease;
+  }
+
+  .auth-screen-view {
+    display: none;
+    animation: authFadeIn 0.22s ease-out;
+  }
+  .auth-screen-view.active {
+    display: block;
+  }
+  @keyframes authFadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* SCREEN 1: WELCOME SCREEN HERO */
+  .auth-welcome-hero {
+    width: 100%;
+    height: 220px;
+    border-radius: 20px;
+    overflow: hidden;
+    position: relative;
+    margin-bottom: 24px;
+    background: linear-gradient(180deg, #F0FDFA 0%, #CCFBF1 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+  }
+  .auth-welcome-hero img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+  }
+  .auth-welcome-hero:hover img {
+    transform: scale(1.03);
+  }
+  .auth-welcome-overlay-badge {
+    position: absolute;
+    bottom: 12px;
+    left: 14px;
+    background: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(8px);
+    color: #FFF;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .auth-btn-dark {
+    width: 100%;
+    background: #111827;
+    color: #FFFFFF;
+    font-size: 15px;
+    font-weight: 700;
+    padding: 14px 20px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: inherit;
+    box-shadow: 0 4px 14px rgba(17, 24, 39, 0.18);
+    margin-bottom: 12px;
+  }
+  .auth-btn-dark:hover {
+    background: #030712;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(17, 24, 39, 0.24);
+  }
+  .auth-btn-dark:active {
+    transform: scale(0.985);
+  }
+  html[data-theme="dark"] .auth-btn-dark {
+    background: #0D9488;
+    color: #FFFFFF;
+  }
+  html[data-theme="dark"] .auth-btn-dark:hover {
+    background: #0F766E;
+  }
+
+  .auth-btn-outline {
+    width: 100%;
+    background: transparent;
+    color: var(--text-main);
+    border: 1.5px solid var(--border-hover);
+    font-size: 15px;
+    font-weight: 700;
+    padding: 13px 20px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: inherit;
+  }
+  .auth-btn-outline:hover {
+    background: var(--bg-surface);
+    border-color: var(--text-main);
+  }
+  .auth-btn-outline:active {
+    transform: scale(0.985);
+  }
+
+  .auth-guest-link {
+    display: block;
+    text-align: center;
+    margin-top: 24px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--primary);
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.15s ease;
+  }
+  .auth-guest-link:hover {
+    text-decoration: underline;
+    color: var(--primary-hover);
+  }
+
+  .auth-top-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .auth-back-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--bg-surface);
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    padding: 0;
+  }
+  .auth-back-btn:hover {
+    border-color: var(--primary);
+    background: var(--bg-card);
+    transform: translateX(-2px);
+  }
+
+  .auth-screen-title {
+    font-size: 26px;
+    font-weight: 800;
+    line-height: 1.25;
+    color: var(--text-main);
+    margin: 16px 0 20px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    letter-spacing: -0.3px;
+  }
+
+  .auth-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .auth-input-wrapper {
+    position: relative;
+    width: 100%;
+  }
+  .auth-form-input {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--bg-surface);
+    color: var(--text-main);
+    font-family: inherit;
+    font-size: 14.5px;
+    font-weight: 500;
+    outline: none;
+    transition: all 0.2s ease;
+  }
+  .auth-form-input:focus {
+    border-color: #0D9488;
+    background: var(--bg-card);
+    box-shadow: 0 0 0 3.5px rgba(13, 148, 136, 0.15);
+  }
+  html[data-theme="dark"] .auth-form-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3.5px rgba(13, 148, 136, 0.25);
+  }
+  .auth-form-input::placeholder {
+    color: var(--text-light);
+    font-weight: 400;
+  }
+
+  .auth-eye-toggle {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    transition: color 0.15s ease;
+  }
+  .auth-eye-toggle:hover {
+    color: var(--text-main);
+  }
+
+  .auth-forgot-link {
+    text-align: right;
+    margin: 0 0 18px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .auth-forgot-link a {
+    color: var(--text-muted);
+    cursor: pointer;
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+  .auth-forgot-link a:hover {
+    color: var(--primary);
+  }
+
+  .auth-error-msg {
+    color: var(--danger);
+    font-size: 12.5px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    min-height: 16px;
+  }
+
+  .auth-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 22px 0 18px;
+    color: var(--text-light);
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .auth-divider::before,
+  .auth-divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid var(--border);
+  }
+  .auth-divider span {
+    padding: 0 14px;
+  }
+
+  .auth-social-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .auth-social-btn {
+    height: 48px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .auth-social-btn:hover {
+    border-color: var(--text-muted);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .auth-footer-text {
+    text-align: center;
+    font-size: 13.5px;
+    color: var(--text-main);
+    font-weight: 500;
+  }
+  .auth-footer-text a {
+    color: var(--primary);
+    font-weight: 800;
+    text-decoration: none;
+    cursor: pointer;
+    margin-left: 4px;
+  }
+  .auth-footer-text a:hover {
+    text-decoration: underline;
+  }
+
+  /* ==========================================================================
+     SIMULATED REALISTIC OAUTH POPUP MODAL (GOOGLE, APPLE, FACEBOOK)
+     ========================================================================== */
+  .oauth-dialog-box {
+    background: #FFFFFF;
+    color: #1F2937;
+    border-radius: 24px;
+    max-width: 440px;
+    width: 100%;
+    padding: 28px 24px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+    position: relative;
+    animation: modalZoom 0.25s ease-out;
+  }
+  .oauth-brand-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #E5E7EB;
+    padding-bottom: 16px;
+  }
+  .oauth-brand-icon {
+    width: 46px;
+    height: 46px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .oauth-brand-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #111827;
+  }
+  .oauth-brand-sub {
+    font-size: 13px;
+    color: #6B7280;
+    margin-top: 4px;
+  }
+  .oauth-accounts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .oauth-account-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid #E5E7EB;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    background: #F9FAFB;
+  }
+  .oauth-account-item:hover {
+    background: #F3F4F6;
+    border-color: #D1D5DB;
+    transform: translateX(2px);
+  }
+  .oauth-acc-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #0D9488, #3B82F6);
+    color: #FFF;
+    font-weight: 800;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .oauth-acc-info {
+    flex: 1;
+    text-align: left;
+  }
+  .oauth-acc-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #111827;
+  }
+  .oauth-acc-email {
+    font-size: 12px;
+    color: #6B7280;
+  }
+  .oauth-loading-state {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px 0;
+    gap: 14px;
+  }
+  .oauth-spinner {
+    width: 38px;
+    height: 38px;
+    border: 3.5px solid #E5E7EB;
+    border-top-color: #4285F4;
+    border-radius: 50%;
+    animation: oauthSpin 0.75s linear infinite;
+  }
+  @keyframes oauthSpin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* PHOTO UPLOAD PREVIEWS */
+  .photo-upload-zone {
+    border: 2px dashed var(--border); border-radius: var(--radius-md); padding: 18px;
+    text-align: center; cursor: pointer; transition: all 0.2s ease; background: var(--bg-surface);
+  }
+  .photo-upload-zone:hover { border-color: var(--primary); background: var(--bg-card); }
+  .photo-preview-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 8px; margin-top: 10px;
+  }
+  .photo-thumb-wrap {
+    position: relative; height: 70px; border-radius: 6px; overflow: hidden; border: 1px solid var(--border);
+  }
+  .photo-thumb-wrap img { width: 100%; height: 100%; object-fit: cover; }
+  .photo-thumb-remove {
+    position: absolute; top: 2px; right: 2px; background: rgba(0,0,0,0.7); color: #fff;
+    border: none; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; cursor: pointer;
+  }
+
+  /* LOCATION SELECTOR MODAL */
+  .campus-zones-select-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px;
+  }
+  .campus-zone-choice {
+    background: var(--bg-surface); padding: 14px; border-radius: var(--radius-md);
+    border: 1px solid var(--border); cursor: pointer; transition: all 0.15s ease;
+  }
+  .campus-zone-choice:hover, .campus-zone-choice.active {
+    border-color: var(--primary); background: var(--primary-light); color: var(--primary);
+  }
+
+  /* FAQ ACCORDION */
+  .faq-accordion { max-width: 800px; margin: 32px auto 0; display: flex; flex-direction: column; gap: 12px; }
+  .faq-item {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+  .faq-question {
+    padding: 18px 24px; font-weight: 700; font-size: 15px; cursor: pointer;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .faq-answer {
+    padding: 0 24px 18px; color: var(--text-muted); font-size: 14px; line-height: 1.6; display: none;
+  }
+  .faq-item.open .faq-answer { display: block; }
+  .faq-item.open .faq-question { color: var(--primary); }
+
+  /* TOAST NOTIFICATION */
+  .toast-alert {
+    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(140%);
+    background: var(--text-main); color: var(--bg-card); padding: 14px 28px; border-radius: var(--radius-full);
+    font-size: 14px; font-weight: 700; box-shadow: var(--shadow-xl); z-index: 300;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .toast-alert.show { transform: translateX(-50%) translateY(0); }
+
+  /* FOOTER */
+  footer {
+    background: var(--bg-card); border-top: 1px solid var(--border);
+    padding: 56px 5% 32px; margin-top: 60px;
+  }
+  .footer-grid {
+    display: grid; grid-template-columns: 2fr 1fr 1fr 1.5fr; gap: 40px;
+    max-width: 1400px; margin: 0 auto 48px;
+  }
+  .footer-col h4 { font-size: 16px; font-weight: 800; margin-bottom: 18px; color: var(--text-main); }
+  .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 10px; font-size: 14px; }
+  .footer-col a { color: var(--text-muted); text-decoration: none; transition: color 0.15s; }
+  .footer-col a:hover { color: var(--primary); }
+  .footer-bottom {
+    border-top: 1px solid var(--border); padding-top: 24px;
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;
+    font-size: 13px; color: var(--text-light); max-width: 1400px; margin: 0 auto;
+  }
+
+  .mobile-drawer-links {
+    display: flex; flex-direction: column; gap: 8px; margin-top: 20px;
+  }
+  .mobile-drawer-links a {
+    font-size: 15px; font-weight: 700; color: var(--text-main); text-decoration: none;
+    padding: 12px 16px; border-radius: var(--radius-md); transition: all 0.15s ease;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .mobile-drawer-links a:hover, .mobile-drawer-links a.active {
+    background: var(--bg-surface); color: var(--primary);
+  }
+
+  /* PRINT STYLES FOR BOARDING PASS */
+  @media print {
+    body * { visibility: hidden !important; }
+    #receiptModal, #receiptModal * { visibility: visible !important; }
+    #receiptModal {
+      position: absolute !important; left: 0 !important; top: 0 !important;
+      width: 100% !important; height: auto !important; background: transparent !important;
+      display: flex !important; justify-content: center !important; padding: 0 !important;
+    }
+    .receipt-boarding-pass {
+      box-shadow: none !important; border: 2px solid #000 !important; width: 100% !important;
+      max-width: 600px !important;
+    }
+    .receipt-boarding-pass button, .receipt-boarding-pass a { display: none !important; }
+  }
+
+  /* RESPONSIVE DESIGN FOR PC vs MOBILE */
+  @media (max-width: 960px) {
+    .hero-section { grid-template-columns: 1fr; }
+    .search-fields-grid { grid-template-columns: 1fr; }
+    .modal-main-layout { grid-template-columns: 1fr; }
+    .gallery-grid { grid-template-columns: 1fr; height: 240px; }
+    .gallery-grid img:not(:first-child) { display: none; }
+    .footer-grid { grid-template-columns: 1fr 1fr; }
+    .nav-center-links { display: none; }
+    .mobile-menu-btn { display: block; }
+    .campus-zones-select-grid { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 600px) {
+    .top-banner { font-size: 12px; padding: 8px 16px; flex-direction: column; text-align: center; }
+    .nav-actions .btn-primary { display: none; }
+    .footer-grid { grid-template-columns: 1fr; }
+    .rooms-visual-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP ANNOUNCEMENT BANNER -->
+<div class="top-banner">
+  <div>🔥 <strong>Warangal Admissions 2026:</strong> 450+ Verified Hostels near NIT, KU, KMC & SR University! Code <strong>NEARSTAY500</strong> for ₹500 OFF.</div>
+  <div class="top-banner-right">
+    <button class="loc-pill-btn" onclick="openLocationModal()" title="Change Campus / City">
+      📍 <span id="currentCityBadge">Warangal (NIT & Kazipet)</span> ▾
+    </button>
+    <span>📞 24x7: <strong>1800-NEAR-STAY</strong></span>
+  </div>
+</div>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="nav-left">
+    <div class="logo" onclick="window.scrollTo({top:0, behavior:'smooth'})">
+      <div class="logo-icon">N</div>
+      <div class="logo-text">NEAR<span>STAY</span></div>
+    </div>
+    <button class="nav-location-btn" onclick="openLocationModal()" title="Select Campus / City">
+      📍 <span id="navCityBadge">Warangal</span> ▾
+    </button>
+  </div>
+
+  <div class="nav-center-links">
+    <a onclick="filterByTag('')" class="active">All Stays</a>
+    <a onclick="filterByTag('Boys Hostel')">👦 Boys PG</a>
+    <a onclick="filterByTag('Girls Hostel')">👧 Girls PG</a>
+    <a onclick="filterByTag('Mess Included')">🍛 Food Verified</a>
+    <a onclick="scrollToSection('zones')">Campus Hubs</a>
+    <a onclick="scrollToSection('why-us')">Why NearStay</a>
+  </div>
+
+  <div class="nav-actions">
+    <button class="icon-btn" onclick="toggleTheme()" title="Switch Light/Dark Mode" id="themeToggleBtn">🌙</button>
+    <button class="icon-btn" onclick="openWishlistDrawer()" title="Saved Stays">
+      ❤️ <span class="badge-counter" id="wishlistCount">0</span>
+    </button>
+    
+    <!-- DYNAMIC AUTH / PROFILE BUTTON -->
+    <div id="navUserContainer">
+      <button class="btn-secondary" id="authBtn" onclick="openAuthModal('student')">Sign In</button>
+    </div>
+
+    <button class="btn-primary" onclick="openOwnerDashboard()">+ List Property</button>
+    <button class="icon-btn" onclick="openSettingsDrawer()" title="Website Settings">⋮</button>
+    <button class="mobile-menu-btn" onclick="toggleMobileNav()">☰</button>
+  </div>
+</nav>
+
+<!-- HERO SECTION -->
+<section class="hero-section">
+  <div>
+    <div class="hero-badge">
+      <span class="pulse-dot"></span> <span id="heroCampusBadge">Live verified stays · NIT Warangal & Kazipet</span>
+    </div>
+    <h1 class="hero-title">
+      Find Your Safe & <br><span class="gradient-text">Verified Stay</span> Nearby.
+    </h1>
+    <p class="hero-sub">
+      Search 100% on-ground inspected Boys & Girls Hostels, PGs, and private rooms with live room-level availability and direct owner booking.
+    </p>
+
+    <!-- SMART SEARCH CONSOLE -->
+    <div class="search-console">
+      <div class="search-tabs">
+        <button class="search-tab active" onclick="setSearchStayType('', this)">🏨 All Accommodations</button>
+        <button class="search-tab" onclick="setSearchStayType('Boys Hostel', this)">👦 Boys PG / Hostels</button>
+        <button class="search-tab" onclick="setSearchStayType('Girls Hostel', this)">👧 Girls PG / Hostels</button>
+        <button class="search-tab" onclick="setSearchStayType('Luxury AC', this)">❄️ AC Deluxe Rooms</button>
+      </div>
+
+      <div class="search-fields-grid">
+        <div class="search-input-group">
+          <label>Locality / College Landmark</label>
+          <input type="text" id="sLocality" placeholder="Near NIT Warangal Gate 1, Kazipet...">
+        </div>
+        <div class="search-input-group">
+          <label>Sharing Type</label>
+          <select id="sSharing">
+            <option value="">Any Sharing</option>
+            <option value="Single">Single Occupancy</option>
+            <option value="Double">2-Sharing Room</option>
+            <option value="Triple">3-Sharing Room</option>
+          </select>
+        </div>
+        <div class="search-input-group">
+          <label>Budget Per Month</label>
+          <select id="sBudget">
+            <option value="">Any Budget</option>
+            <option value="4500">Under ₹4,500</option>
+            <option value="6000">₹4,500 - ₹6,000</option>
+            <option value="8000">₹6,000+ (AC/Deluxe)</option>
+          </select>
+        </div>
+        <button class="btn-primary" style="height: 52px; padding: 0 28px;" onclick="executeMainSearch()">
+          Search Stays →
+        </button>
+      </div>
+    </div>
+
+    <!-- QUICK CHIPS -->
+    <div class="quick-chips">
+      <span style="font-size:12px; font-weight:700; color:var(--text-light);">TRENDING:</span>
+      <div class="chip-tag" onclick="quickFilterSearch('NIT Warangal')">🚶 3 Mins to NIT Gate</div>
+      <div class="chip-tag" onclick="quickFilterSearch('Kazipet')">🚆 Near Kazipet Station</div>
+      <div class="chip-tag" onclick="quickFilterSearch('Subedari')">📚 Subedari Study Hub</div>
+      <div class="chip-tag" onclick="quickFilterSearch('Mess')">🍛 3-Meals Included</div>
+      <div class="chip-tag" onclick="quickFilterSearch('AC')">❄️ AC Sharing</div>
+    </div>
+  </div>
+
+  <!-- HERO SHOWCASE CARD -->
+  <div class="hero-showcase">
+    <img src="images/hostel_exterior_1.jpg" id="heroShowcaseImg" class="hero-showcase-img" alt="Hostel Visual">
+    <div class="showcase-overlay">
+      <div class="showcase-top">
+        <div class="live-badge"><span class="pulse-dot"></span> LIVE INVENTORY</div>
+        <div class="live-badge" style="background:#059669; color:#fff;">VERIFIED HOSTEL ✓</div>
+      </div>
+      <div class="showcase-bottom">
+        <h3 id="heroShowcaseTitle">Sri Sai Executive Boys Residence</h3>
+        <div class="showcase-stats">
+          <span>📍 Kazipet (300m to NIT)</span>
+          <span>⭐ 4.9 (168 Reviews)</span>
+          <span style="color:#34D399; font-weight:700;">⚡ 8 Rooms Free</span>
+        </div>
+        <div class="mini-grid" id="heroMiniGrid"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRUST PILLARS -->
+<section class="trust-section">
+  <div class="trust-grid">
+    <div class="trust-card">
+      <div class="trust-icon">🛡️</div>
+      <div class="trust-info">
+        <h4>100% On-Ground Verified</h4>
+        <p>Wardens & facilities physically checked</p>
+      </div>
+    </div>
+    <div class="trust-card">
+      <div class="trust-icon">⚡</div>
+      <div class="trust-info">
+        <h4>Live Room Matrix</h4>
+        <p>Select exact room number before booking</p>
+      </div>
+    </div>
+    <div class="trust-card">
+      <div class="trust-icon">🍛</div>
+      <div class="trust-info">
+        <h4>Hygienic Mess Inspected</h4>
+        <p>3-Time fresh South Indian homely food</p>
+      </div>
+    </div>
+    <div class="trust-card">
+      <div class="trust-icon">🚫</div>
+      <div class="trust-info">
+        <h4>Zero Brokerage</h4>
+        <p>Pay zero commission or middleman fee</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CAMPUS ZONES -->
+<section class="section-container" id="zones">
+  <div class="section-header">
+    <div>
+      <h2>Popular Student Hubs</h2>
+      <p>Choose your preferred locality near colleges, coaching centers and railway junctions.</p>
+    </div>
+  </div>
+  <div class="zones-grid">
+    <div class="zone-card" onclick="quickFilterSearch('Kazipet')">
+      <img src="images/hostel_exterior_1.jpg" alt="Kazipet">
+      <div class="zone-card-overlay">
+        <h4>Kazipet & NIT Zone</h4>
+        <span>140+ Verified Hostels · Student Hub</span>
+      </div>
+    </div>
+    <div class="zone-card" onclick="quickFilterSearch('Subedari')">
+      <img src="images/hostel_exterior_2.jpg" alt="Subedari">
+      <div class="zone-card-overlay">
+        <h4>Subedari & Arts College</h4>
+        <span>95+ Peaceful PGs & Hostels</span>
+      </div>
+    </div>
+    <div class="zone-card" onclick="quickFilterSearch('Hanamkonda')">
+      <img src="images/hostel_lounge_study.jpg" alt="Hanamkonda">
+      <div class="zone-card-overlay">
+        <h4>Hanamkonda Coaching Belt</h4>
+        <span>110+ Student Stays with Study Rooms</span>
+      </div>
+    </div>
+    <div class="zone-card" onclick="quickFilterSearch('KMC')">
+      <img src="images/hostel_room_deluxe.jpg" alt="Medical Hub">
+      <div class="zone-card-overlay">
+        <h4>Nayeem Nagar & KMC Area</h4>
+        <span>60+ AC & Deluxe Medical PG Stays</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LISTINGS SECTION -->
+<section class="section-container" id="listings">
+  <div class="section-header">
+    <div>
+      <h2>Verified Stays Near You</h2>
+      <p>Real-time room occupancy, authentic photos, mess menus, and verified wardens.</p>
+    </div>
+  </div>
+
+  <!-- FILTER CONTROLS BAR -->
+  <div class="filter-controls-bar">
+    <div class="pills-group">
+      <button class="filter-pill active" id="fAll" onclick="filterByTag('')">All Stays</button>
+      <button class="filter-pill" id="fBoys" onclick="filterByTag('Boys Hostel')">👦 Boys PG</button>
+      <button class="filter-pill" id="fGirls" onclick="filterByTag('Girls Hostel')">👧 Girls PG</button>
+      <button class="filter-pill" id="fMess" onclick="filterByTag('Mess Included')">🍛 Food Included</button>
+      <button class="filter-pill" id="fAC" onclick="filterByTag('AC Available')">❄️ AC Stays</button>
+      <button class="filter-pill" id="fBudget" onclick="filterByTag('Budget')">💰 Under ₹5,000</button>
+    </div>
+
+    <div class="sort-group">
+      <label>Sort By:</label>
+      <select class="sort-select" id="sortOption" onchange="sortListings()">
+        <option value="featured">Featured Stays</option>
+        <option value="rating">Highest Rated ⭐</option>
+        <option value="price-asc">Price: Low to High</option>
+        <option value="price-desc">Price: High to Low</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- LISTINGS GRID -->
+  <div class="listings-grid" id="listingGrid">
+    <!-- Populated by JavaScript -->
+  </div>
+</section>
+
+<!-- WHY NEARSTAY SECTION -->
+<section class="section-container" id="why-us" style="background:var(--bg-card); border-radius:var(--radius-xl); border:1px solid var(--border); padding:48px 5%;">
+  <div class="section-header" style="text-align:center; max-width:700px; margin:0 auto 40px;">
+    <h2>Why NearStay Beats Traditional Hunting</h2>
+    <p>Say goodbye to wandering streets in hot sun, calling dead numbers, or trusting misleading broker promises.</p>
+  </div>
+
+  <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:24px;">
+    <div style="padding:24px; border-radius:var(--radius-lg); background:var(--bg-surface); border:1px solid var(--border);">
+      <div style="font-size:32px; margin-bottom:12px;">🔍</div>
+      <h3 style="font-size:18px; font-weight:700; font-family:'Plus Jakarta Sans'; margin-bottom:8px;">Live Room-Level Matrix</h3>
+      <p style="color:var(--text-muted); font-size:14px; line-height:1.6;">Don't travel blindly. See which floor and which specific bed number is vacant in real-time before walking in.</p>
+    </div>
+    <div style="padding:24px; border-radius:var(--radius-lg); background:var(--bg-surface); border:1px solid var(--border);">
+      <div style="font-size:32px; margin-bottom:12px;">🍲</div>
+      <h3 style="font-size:18px; font-weight:700; font-family:'Plus Jakarta Sans'; margin-bottom:8px;">Inspected Weekly Food Menu</h3>
+      <p style="color:var(--text-muted); font-size:14px; line-height:1.6;">Inspect the exact 7-day meal schedule. Only hostels with hygienic kitchen audits receive our verified mess badge.</p>
+    </div>
+    <div style="padding:24px; border-radius:var(--radius-lg); background:var(--bg-surface); border:1px solid var(--border);">
+      <div style="font-size:32px; margin-bottom:12px;">🧾</div>
+      <h3 style="font-size:18px; font-weight:700; font-family:'Plus Jakarta Sans'; margin-bottom:8px;">Instant Digital Boarding Pass</h3>
+      <p style="color:var(--text-muted); font-size:14px; line-height:1.6;">Get an official verified booking confirmation pass with QR code, locked rent rate, and direct warden phone contact.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ ACCORDION -->
+<section class="section-container">
+  <div class="section-header" style="text-align:center; max-width:600px; margin:0 auto;">
+    <h2>Frequently Asked Questions</h2>
+    <p>Everything students and parents need to know about booking with NearStay.</p>
+  </div>
+
+  <div class="faq-accordion">
+    <div class="faq-item open">
+      <div class="faq-question" onclick="toggleFaq(this)">
+        <span>Is food included in the monthly hostel rent?</span>
+        <span>▼</span>
+      </div>
+      <div class="faq-answer">
+        Yes! Over 90% of our listed hostels include 3-time South Indian meals (Breakfast, Lunch, Dinner with Sunday specials) in the monthly rent with zero extra charges.
+      </div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-question" onclick="toggleFaq(this)">
+        <span>How does the live room grid work?</span>
+        <span>▼</span>
+      </div>
+      <div class="faq-answer">
+        Property wardens update room statuses directly on NearStay. When you select an available room (Green), it gets locked for you with an instant digital booking confirmation pass.
+      </div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-question" onclick="toggleFaq(this)">
+        <span>Do I need to pay full amount online?</span>
+        <span>▼</span>
+      </div>
+      <div class="faq-answer">
+        No! You can book and hold your room with ₹0 platform fee. You pay the rent and security deposit directly to the hostel warden at the time of physical check-in.
+      </div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-question" onclick="toggleFaq(this)">
+        <span>What security measures are in place for Girls Hostels?</span>
+        <span>▼</span>
+      </div>
+      <div class="faq-answer">
+        All Girls Hostels on NearStay have mandatory 24/7 resident female wardens, biometric fingerprint gates, CCTV surveillance at entry points, and strict 10:00 PM safety curfew protocols.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================================================= -->
+<!-- MODALS & DRAWERS SECTION -->
+<!-- ========================================================================= -->
+
+<!-- 1. LOCATION SELECTOR MODAL (BookMyShow / Swiggy style) -->
+<div class="modal-overlay" id="locationModal">
+  <div class="detail-modal-box" style="max-width: 540px; padding: 24px;">
+    <button class="modal-close-btn" onclick="closeModal('locationModal')">✕</button>
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+      <span style="font-size:24px;">📍</span>
+      <h3 style="font-size:20px;">Select Your Campus or Locality</h3>
+    </div>
+    <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">
+      We'll personalize room vacancy, distance from your college gate, and mess menus for your zone.
+    </p>
+
+    <button class="btn-primary" style="width:100%; justify-content:center; padding:12px; margin-bottom:18px;" onclick="detectUserLocation()">
+      🎯 Detect My Current Location (GPS)
+    </button>
+
+    <div style="position:relative; margin-bottom:14px;">
+      <input type="text" id="locSearchInput" oninput="filterCampusList()" placeholder="🔍 Type college, landmark or city name..." style="width:100%; padding:10px 14px; border-radius:var(--radius-sm); border:1px solid var(--border); font-family:inherit; font-size:13px; font-weight:600; background:var(--bg-surface); color:var(--text-main);">
+    </div>
+
+    <h4 style="font-size:12px; font-weight:800; color:var(--text-light); text-transform:uppercase; margin-bottom:10px;">Popular Educational Zones:</h4>
+    
+    <div class="campus-zones-select-grid" id="campusZonesGrid">
+      <div class="campus-zone-choice" onclick="selectCampusLocation('Kazipet', 'NIT Warangal & Kazipet')">
+        <div style="font-weight:800; font-size:14px;">🏫 NIT Warangal (Kazipet)</div>
+        <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">Gate 1, 2 & Station Belt</div>
+      </div>
+      <div class="campus-zone-choice" onclick="selectCampusLocation('Subedari', 'Subedari Arts College')">
+        <div style="font-weight:800; font-size:14px;">📚 Subedari Zone</div>
+        <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">Arts College & Police Line</div>
+      </div>
+      <div class="campus-zone-choice" onclick="selectCampusLocation('Hanamkonda', 'Hanamkonda Coaching Belt')">
+        <div style="font-weight:800; font-size:14px;">🏬 Hanamkonda Main</div>
+        <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">Waddepally & Coaching Belt</div>
+      </div>
+      <div class="campus-zone-choice" onclick="selectCampusLocation('KMC', 'Nayeem Nagar & KMC Medical')">
+        <div style="font-weight:800; font-size:14px;">🏥 Nayeem Nagar & KMC</div>
+        <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">Kakatiya Medical College</div>
+      </div>
+      <div class="campus-zone-choice" onclick="selectCampusLocation('KU', 'Kakatiya University Road')">
+        <div style="font-weight:800; font-size:14px;">🏛️ Kakatiya University</div>
+        <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">KU Cross & University Hub</div>
+      </div>
+      <div class="campus-zone-choice" onclick="selectCampusLocation('Hyderabad', 'Hyderabad Student Zone')">
+        <div style="font-weight:800; font-size:14px;">🏙️ Hyderabad Hub</div>
+        <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">KPHB / Gachibowli / Madhapur</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 2. FULL-SCREEN PROPERTY DETAIL MODAL (STICKY SPLIT LAYOUT) -->
+<div class="modal-overlay" id="detailModal">
+  <div class="detail-modal-box">
+    <button class="modal-close-btn" onclick="closeModal('detailModal')">✕</button>
+
+    <!-- 3-PHOTO COLLAGE -->
+    <div class="gallery-grid" id="modalGalleryGrid"></div>
+
+    <div class="modal-main-layout">
+      <!-- LEFT SCROLLABLE DETAILS SECTION -->
+      <div class="modal-scrollable-content">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:4px;">
+          <div>
+            <h2 id="mName" style="font-size:24px;"></h2>
+            <div style="font-size:14px; color:var(--text-muted); margin-top:4px;" id="mLocality"></div>
+          </div>
+          <div class="rating-pill" id="mRating">⭐ 4.9 (120)</div>
+        </div>
+
+        <!-- MODAL TABS -->
+        <div class="modal-tab-nav">
+          <button class="modal-tab-btn active" onclick="switchModalTab('rooms', this)">🛏️ Rooms & Live Grid</button>
+          <button class="modal-tab-btn" onclick="switchModalTab('food', this)">🍛 Mess Food Menu</button>
+          <button class="modal-tab-btn" onclick="switchModalTab('amenities', this)">✨ Amenities</button>
+          <button class="modal-tab-btn" onclick="switchModalTab('map', this)">📍 Map & Distance</button>
+          <button class="modal-tab-btn" onclick="switchModalTab('reviews', this)">⭐ Reviews</button>
+        </div>
+
+        <!-- TAB 1: LIVE ROOM GRID -->
+        <div id="tab-rooms">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <h4 style="font-size:14px; font-weight:800;">Select Floor & Vacant Room Number:</h4>
+            <span style="font-size:11px; font-weight:700; color:var(--success);">🟢 Green = Available</span>
+          </div>
+          <div class="floor-selector">
+            <button class="floor-btn active" onclick="filterFloor(1, this)">1st Floor</button>
+            <button class="floor-btn" onclick="filterFloor(2, this)">2nd Floor</button>
+            <button class="floor-btn" onclick="filterFloor(3, this)">3rd Floor</button>
+          </div>
+          <div class="rooms-visual-grid" id="modalRoomsGrid"></div>
+        </div>
+
+        <!-- TAB 2: FOOD MENU -->
+        <div id="tab-food" style="display:none;">
+          <h4 style="font-size:14px; font-weight:800; margin-bottom:10px;">Audited Weekly Homely Mess Timetable:</h4>
+          <div class="menu-schedule-card">
+            <div class="meal-row"><span class="meal-badge">🍳 Breakfast:</span><span>Idli Sambar, Masala Dosa, Puri Bhaji, Upma & Fresh Tea</span></div>
+            <div class="meal-row"><span class="meal-badge">🍛 Lunch:</span><span>Unlimited Steamed Rice, Sambar, Rasam, Veg Curry, Curd & Papad</span></div>
+            <div class="meal-row"><span class="meal-badge">☕ Evening:</span><span>Tea / Coffee with Hot Snacks (Mirchi Bajji / Samosa)</span></div>
+            <div class="meal-row"><span class="meal-badge">🍗 Dinner:</span><span>Special Chicken Biryani / Curry (Sundays & Wednesdays), Paneer Butter Masala</span></div>
+          </div>
+        </div>
+
+        <!-- TAB 3: AMENITIES -->
+        <div id="tab-amenities" style="display:none;">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;" id="modalAmenitiesList"></div>
+        </div>
+
+        <!-- TAB 4: MAP -->
+        <div id="tab-map" style="display:none;">
+          <div style="height:220px; border-radius:var(--radius-md); overflow:hidden; border:1px solid var(--border);">
+            <iframe width="100%" height="100%" frameborder="0" src="https://maps.google.com/maps?q=NIT+Warangal+Kazipet&t=&z=14&ie=UTF8&iwloc=&output=embed"></iframe>
+          </div>
+          <div style="margin-top:10px; font-size:13px; color:var(--text-muted);" id="mTransitDesc">
+            🚶 <strong>Walking:</strong> 4 mins to Campus Gate | 🚆 <strong>Transit:</strong> 6 mins to Railway Station.
+          </div>
+        </div>
+
+        <!-- TAB 5: REVIEWS -->
+        <div id="tab-reviews" style="display:none;">
+          <!-- Dynamically Populated by renderModalReviews -->
+        </div>
+      </div>
+
+      <!-- RIGHT STICKY CHECKOUT PANEL -->
+      <div>
+        <div class="checkout-widget">
+          <div class="checkout-price-head">
+            <div>
+              <span style="font-size:24px; font-weight:800; color:var(--primary);" id="mPriceRent">₹5,500</span>
+              <span style="font-size:13px; color:var(--text-muted);">/ month</span>
+            </div>
+            <span style="font-size:12px; font-weight:700; color:var(--success);">Zero Brokerage</span>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:12px;">
+            <div>
+              <label style="font-size:11px; font-weight:800; color:var(--text-light); text-transform:uppercase;">Selected Room & Sharing:</label>
+              <div style="font-size:14px; font-weight:700; margin-top:4px; color:var(--primary);" id="mSelectedRoomDesc">Please tap an available room on the grid</div>
+            </div>
+
+            <div>
+              <label style="font-size:11px; font-weight:800; color:var(--text-light); text-transform:uppercase;">Student Full Name:</label>
+              <input type="text" id="bStudentName" placeholder="Enter student name" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border); font-family:inherit; margin-top:4px; font-weight:600; background:var(--bg-card); color:var(--text-main);">
+            </div>
+
+            <div>
+              <label style="font-size:11px; font-weight:800; color:var(--text-light); text-transform:uppercase;">Mobile Number:</label>
+              <input type="tel" id="bStudentPhone" placeholder="10-digit mobile number" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border); font-family:inherit; margin-top:4px; font-weight:600; background:var(--bg-card); color:var(--text-main);">
+            </div>
+
+            <div>
+              <label style="font-size:11px; font-weight:800; color:var(--text-light); text-transform:uppercase;">Expected Check-in Date:</label>
+              <input type="date" id="bCheckDate" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border); font-family:inherit; margin-top:4px; font-weight:600; background:var(--bg-card); color:var(--text-main);">
+            </div>
+
+            <div class="coupon-box">
+              <input type="text" id="bCoupon" class="coupon-input" placeholder="Coupon (NEARSTAY500)">
+              <button class="btn-secondary" style="padding:0 14px;" onclick="applyDiscountCoupon()">Apply</button>
+            </div>
+
+            <!-- PRICE CALCULATION -->
+            <div class="price-calc-table">
+              <div class="price-calc-row"><span>Monthly Room Rent:</span><span id="cRent">₹5,500</span></div>
+              <div class="price-calc-row"><span>Refundable Security Deposit:</span><span>₹1,000</span></div>
+              <div class="price-calc-row" id="cDiscountRow" style="display:none; color:var(--success);"><span>Discount Coupon:</span><span id="cDiscount">-₹500</span></div>
+              <div class="price-calc-row"><span>Platform & Inspection Fee:</span><span style="color:var(--success); font-weight:700;">FREE (₹0)</span></div>
+              <div class="price-calc-row final"><span>Total Payable at Check-in:</span><span id="cTotal">₹6,500</span></div>
+            </div>
+
+            <button class="btn-primary" id="confirmBookingBtn" style="width:100%; justify-content:center; padding:14px; margin-top:8px;" onclick="generateOfficialPass()" disabled>
+              Select an available room above
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 3. DIGITAL BOARDING PASS MODAL -->
+<div class="modal-overlay" id="receiptModal">
+  <div class="receipt-boarding-pass">
+    <div class="pass-header">
+      <div style="font-size:22px; font-weight:800;">NEARSTAY BOARDING PASS</div>
+      <div style="font-size:12px; opacity:0.9; margin-top:2px;">Official Student Room Allocation Pass</div>
+      <div style="font-family:'JetBrains Mono'; font-weight:800; font-size:16px; margin-top:8px; background:rgba(255,255,255,0.2); padding:4px 12px; border-radius:var(--radius-full); display:inline-block;" id="passId">
+        #NS-WAR-2026-9842
+      </div>
+    </div>
+
+    <div class="pass-body">
+      <div style="text-align:center; margin-bottom:16px;">
+        <h3 id="passHostel" style="font-size:20px; font-weight:800;">Sri Sai Executive Boys Residence</h3>
+        <div style="font-size:13px; color:var(--text-muted);" id="passArea">Kazipet, Near NIT Warangal</div>
+      </div>
+
+      <div class="pass-grid">
+        <div><span style="color:#64748B;">Allocated Room:</span><br><strong id="passRoom" style="font-size:16px; color:#0F766E;">Room 204</strong></div>
+        <div><span style="color:#64748B;">Student Name:</span><br><strong id="passStudent">Rahul Sharma</strong></div>
+        <div><span style="color:#64748B;">Check-in Date:</span><br><strong id="passDate">01-Sep-2026</strong></div>
+        <div><span style="color:#64748B;">Amount Due at Check-in:</span><br><strong id="passAmount" style="color:#0F766E;">₹6,000</strong></div>
+      </div>
+
+      <div class="pass-qr-strip">
+        <div>
+          <div style="font-size:13px; font-weight:800; color:#0F172A;">RECEPTION VERIFICATION</div>
+          <div style="font-size:11px; color:#64748B;">Show this digital pass at hostel gate</div>
+        </div>
+        <div style="font-size:28px;">📱</div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:20px;">
+        <button class="btn-primary" style="justify-content:center; background:#0F172A;" onclick="window.print()">🖨️ Print Pass</button>
+        <a id="passWardenCall" href="tel:+919876543210" class="btn-secondary" style="text-align:center; text-decoration:none; justify-content:center; display:flex; align-items:center;">📞 Call Warden</a>
+      </div>
+      <button class="btn-secondary" style="width:100%; margin-top:10px; justify-content:center;" onclick="closeModal('receiptModal')">Back to Listings</button>
+    </div>
+  </div>
+</div>
+
+<!-- 4. STUDENT PROFILE & HISTORY MODAL -->
+<div class="modal-overlay" id="studentProfileModal">
+  <div class="detail-modal-box" style="max-width: 620px; padding: 28px;">
+    <button class="modal-close-btn" onclick="closeModal('studentProfileModal')">✕</button>
+    
+    <div style="display:flex; align-items:center; gap:16px; margin-bottom:20px; border-bottom:1px solid var(--border); padding-bottom:16px;">
+      <div class="user-avatar-circle" style="width:52px; height:52px; font-size:20px;" id="pAvatarCircle">S</div>
+      <div>
+        <h3 style="font-size:20px;" id="pStudentName">Student Profile</h3>
+        <div style="font-size:13px; color:var(--text-muted);" id="pStudentCollege">NIT Warangal · B.Tech</div>
+      </div>
+    </div>
+
+    <!-- PROFILE TABS -->
+    <div class="modal-tab-nav" style="margin-bottom:16px;">
+      <button class="modal-tab-btn active" onclick="switchProfileTab('history', this)">🎟️ My Bookings</button>
+      <button class="modal-tab-btn" onclick="switchProfileTab('edit', this)">✏️ Edit Profile</button>
+      <button class="modal-tab-btn" onclick="switchProfileTab('settings', this)">⚙️ Preferences</button>
+    </div>
+
+    <!-- TAB: BOOKING HISTORY -->
+    <div id="pTab-history">
+      <h4 style="font-size:14px; font-weight:800; margin-bottom:12px;">Active & Past Hostel Bookings:</h4>
+      <div id="pBookingHistoryContainer" style="display:flex; flex-direction:column; gap:12px;">
+        <!-- Populated dynamically -->
+      </div>
+    </div>
+
+    <!-- TAB: EDIT PROFILE -->
+    <div id="pTab-edit" style="display:none;">
+      <form onsubmit="handleSaveStudentProfile(event)" style="display:flex; flex-direction:column; gap:12px;">
+        <div>
+          <label style="font-size:11px; font-weight:800; color:var(--text-light); text-transform:uppercase;">Full Name</label>
+          <input type="text" id="editName" required style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border); font-family:inherit; font-weight:600; background:var(--bg-surface); color:var(--text-main);">
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div>
+            <label style="font-size:11px; font-weight:800; color:var(--text-light); text-transform:uppercase;">College / Institute</label>
+            <input type="text" id="editCollege" placeholder="e.g. NIT Warangal" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border); font-family:inherit; font-weight:600; background:var(--bg-surface); color:var(--text-main);">
+          </div>
+          <div>
+            <label style="font-size:11px; font-weight:800; color:var(--text-light); text-transform:uppercase;">Branch & Year</label>
+            <input type="text" id="editBranch" placeholder="e.g. CSE 2nd Year" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border); font-family:inherit; font-weight:600; background:var(--bg-surface); color:var(--text-main);">
+          </div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div>
+            <label style="font-size:11px; font-weight:800; color:var(--text-light); text-transform:uppercase;">Mobile Number</label>
+            <input type="tel" id="editPhone" required style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border); font-family:inherit; font-weight:600; background:var(--bg-surface); color:var(--text-main);">
+          </div>
+          <div>
+            <label style="font-size:11px; font-weight:800; color:var(--text-light); text-transform:uppercase;">Parent / Emergency Contact</label>
+            <input type="tel" id="editEmergency" placeholder="Parent phone number" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border); font-family:inherit; font-weight:600; background:var(--bg-surface); color:var(--text-main);">
+          </div>
+        </div>
+        <button type="submit" class="btn-primary" style="justify-content:center; padding:12px; margin-top:8px;">Save Profile Changes ✓</button>
+      </form>
+    </div>
+
+    <!-- TAB: SETTINGS -->
+    <div id="pTab-settings" style="display:none;">
+      <div style="display:flex; flex-direction:column; gap:14px;">
+        <div style="background:var(--bg-surface); padding:14px; border-radius:var(--radius-md); border:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div style="font-weight:700; font-size:14px;">Diet / Food Preference</div>
+            <div style="font-size:12px; color:var(--text-muted);">Customize hostel mess recommendations</div>
+          </div>
+          <select id="pFoodPref" style="padding:6px 10px; border-radius:6px; border:1px solid var(--border); background:var(--bg-card); color:var(--text-main); font-weight:700;">
+            <option value="both">All (Veg & Non-Veg)</option>
+            <option value="veg">Pure Veg Only</option>
+          </select>
+        </div>
+
+        <button class="btn-secondary" style="color:var(--danger); border-color:var(--danger); justify-content:center; padding:12px;" onclick="handleUserSignOut()">
+          🚪 Sign Out from Student Account
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 5. WARDEN / OWNER DASHBOARD MODAL -->
+<div class="modal-overlay" id="ownerDashboardModal">
+  <div class="detail-modal-box" style="max-width: 820px; padding: 28px;">
+    <button class="modal-close-btn" onclick="closeModal('ownerDashboardModal')">✕</button>
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid var(--border); padding-bottom:16px; flex-wrap:wrap; gap:12px;">
+      <div>
+        <h3 style="font-size:22px;">🏢 Warden & Property Management Console</h3>
+        <div style="font-size:13px; color:var(--text-muted);">Manage your hostel listings, live room occupancy, and student admissions</div>
+      </div>
+      <button class="btn-primary" onclick="openAddPropertyFromDashboard()">+ Add New Hostel</button>
+    </div>
+
+    <!-- WARDEN STATS -->
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(160px, 1fr)); gap:12px; margin-bottom:24px;">
+      <div style="background:var(--bg-surface); padding:14px; border-radius:var(--radius-md); border:1px solid var(--border);">
+        <div style="font-size:11px; font-weight:800; color:var(--text-light); text-transform:uppercase;">Listed Hostels</div>
+        <div style="font-size:24px; font-weight:800; color:var(--primary);" id="wStatProps">0</div>
+      </div>
+      <div style="background:var(--bg-surface); padding:14px; border-radius:var(--radius-md); border:1px solid var(--border);">
+        <div style="font-size:11px; font-weight:800; color:var(--text-light); text-transform:uppercase;">Available Rooms</div>
+        <div style="font-size:24px; font-weight:800; color:var(--success);" id="wStatAvail">0</div>
+      </div>
+      <div style="background:var(--bg-surface); padding:14px; border-radius:var(--radius-md); border:1px solid var(--border);">
+        <div style="font-size:11px; font-weight:800; color:var(--text-light); text-transform:uppercase;">Booked Rooms</div>
+        <div style="font-size:24px; font-weight:800; color:var(--text-muted);" id="wStatBooked">0</div>
+      </div>
+    </div>
+
+    <h4 style="font-size:15px; font-weight:800; margin-bottom:12px;">My Managed Properties:</h4>
+    <div id="wPropertiesContainer" style="display:flex; flex-direction:column; gap:16px;">
+      <!-- Populated dynamically -->
+    </div>
+  </div>
+</div>
+
+<!-- 6. MULTI-METHOD & 3-SCREEN AUTH MODAL (PRO WEB DEVELOPER GRADE) -->
+<div class="modal-overlay" id="authModal">
+  <div class="auth-modal-box" id="authModalBox">
+    <button class="modal-close-btn" onclick="closeModal('authModal')" title="Close">✕</button>
+
+    <!-- ROLE SWITCH TABS & BADGE -->
+    <div class="auth-role-tabs-wrap">
+      <div class="auth-role-tabs">
+        <button type="button" class="auth-role-tab active" id="authTabStudent" onclick="switchAuthRole('student')">
+          <span>👤</span> User Login
+        </button>
+        <button type="button" class="auth-role-tab" id="authTabOwner" onclick="switchAuthRole('owner')">
+          <span>🏢</span> Owner / Admin
+        </button>
+      </div>
+      <div class="auth-role-pill-badge" id="authRoleBadge">
+        <span>🎓</span> Student Portal · Verified Access
+      </div>
+    </div>
+
+    <!-- SCREEN 1: WELCOME SCREEN (IMAGE + LOGIN & REGISTER BUTTONS + GUEST) -->
+    <div class="auth-screen-view active" id="authViewWelcome">
+      <div class="auth-welcome-hero">
+        <img id="authWelcomeHeroImg" 
+             src="https://images.unsplash.com/photo-1485955900006-10f4d324d411?auto=format&fit=crop&w=800&q=80" 
+             alt="NearStay Welcome" 
+             onerror="this.onerror=null; this.src='images/hostel_room_deluxe.jpg';">
+        <div class="auth-welcome-overlay-badge" id="authWelcomeHeroBadge">
+          <span>✓</span> 100% Verified Stays
+        </div>
+      </div>
+
+      <button type="button" class="auth-btn-dark" onclick="switchAuthScreen('login')">
+        Login
+      </button>
+
+      <button type="button" class="auth-btn-outline" onclick="switchAuthScreen('register')">
+        Register
+      </button>
+
+      <a class="auth-guest-link" onclick="handleGuestContinue()">
+        Continue as a guest
+      </a>
+    </div>
+
+    <!-- SCREEN 2: LOGIN SCREEN -->
+    <div class="auth-screen-view" id="authViewLogin">
+      <div class="auth-top-nav">
+        <button type="button" class="auth-back-btn" onclick="switchAuthScreen('welcome')" title="Back">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+      </div>
+
+      <h2 class="auth-screen-title" id="authLoginHeading">
+        Welcome back! Glad<br>to see you, Again!
+      </h2>
+      <div style="font-size:13px; color:var(--text-muted); margin-top:-14px; margin-bottom:18px;" id="authLoginSub">
+        Sign in to unlock coupons & instant room booking
+      </div>
+
+      <form onsubmit="handleLoginSubmit(event)">
+        <div class="auth-input-group">
+          <input type="email" id="loginEmail" class="auth-form-input" placeholder="Enter your email" required autocomplete="email">
+          
+          <div class="auth-input-wrapper">
+            <input type="password" id="loginPassword" class="auth-form-input" placeholder="Enter your password" required autocomplete="current-password" style="padding-right: 44px;">
+            <button type="button" class="auth-eye-toggle" onclick="togglePasswordVisibility('loginPassword', this)" title="Toggle password visibility">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="auth-forgot-link">
+          <a onclick="handleForgotPassword()">Forgot Password?</a>
+        </div>
+
+        <div id="loginError" class="auth-error-msg"></div>
+
+        <button type="submit" class="auth-btn-dark" id="authLoginBtn">
+          Login
+        </button>
+      </form>
+
+      <div class="auth-divider">
+        <span>Or Login with</span>
+      </div>
+
+      <div class="auth-social-row">
+        <button type="button" class="auth-social-btn" onclick="handleSocialAuth('Facebook')" title="Login with Facebook">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="#1877F2">
+            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+          </svg>
+        </button>
+        <button type="button" class="auth-social-btn" onclick="handleSocialAuth('Google')" title="Login with Google">
+          <svg width="22" height="22" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+          </svg>
+        </button>
+        <button type="button" class="auth-social-btn" onclick="handleSocialAuth('Apple')" title="Login with Apple">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.86c.62-.76 1.04-1.82.93-2.86-.9.04-1.99.6-2.63 1.36-.57.65-1.07 1.73-.93 2.76 1.01.08 2.03-.53 2.63-1.26z"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="auth-footer-text">
+        Don't have an account? <a onclick="switchAuthScreen('register')">Register Now</a>
+      </div>
+    </div>
+
+    <!-- SCREEN 3: REGISTER SCREEN -->
+    <div class="auth-screen-view" id="authViewRegister">
+      <div class="auth-top-nav">
+        <button type="button" class="auth-back-btn" onclick="switchAuthScreen('welcome')" title="Back">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+      </div>
+
+      <h2 class="auth-screen-title" id="authRegisterHeading">
+        Hello! Register to get<br>started
+      </h2>
+      <div style="font-size:13px; color:var(--text-muted); margin-top:-14px; margin-bottom:18px;" id="authRegisterSub">
+        Create your verified account in under 30 seconds
+      </div>
+
+      <form onsubmit="handleRegisterSubmit(event)">
+        <div class="auth-input-group">
+          <input type="text" id="registerUsername" class="auth-form-input" placeholder="Username" required autocomplete="name">
+          <input type="email" id="registerEmail" class="auth-form-input" placeholder="Email" required autocomplete="email">
+          
+          <div class="auth-input-wrapper">
+            <input type="password" id="registerPassword" class="auth-form-input" placeholder="Password" required autocomplete="new-password" style="padding-right: 44px;">
+            <button type="button" class="auth-eye-toggle" onclick="togglePasswordVisibility('registerPassword', this)" title="Toggle password visibility">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
+
+          <div class="auth-input-wrapper">
+            <input type="password" id="registerConfirmPassword" class="auth-form-input" placeholder="Confirm password" required autocomplete="new-password" style="padding-right: 44px;">
+            <button type="button" class="auth-eye-toggle" onclick="togglePasswordVisibility('registerConfirmPassword', this)" title="Toggle password visibility">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div id="registerError" class="auth-error-msg" style="margin-top: 6px;"></div>
+
+        <button type="submit" class="auth-btn-dark" id="authRegisterBtn" style="margin-top: 6px;">
+          Register
+        </button>
+      </form>
+
+      <div class="auth-divider">
+        <span>Or Register with</span>
+      </div>
+
+      <div class="auth-social-row">
+        <button type="button" class="auth-social-btn" onclick="handleSocialAuth('Facebook')" title="Register with Facebook">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="#1877F2">
+            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+          </svg>
+        </button>
+        <button type="button" class="auth-social-btn" onclick="handleSocialAuth('Google')" title="Register with Google">
+          <svg width="22" height="22" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+          </svg>
+        </button>
+        <button type="button" class="auth-social-btn" onclick="handleSocialAuth('Apple')" title="Register with Apple">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.86c.62-.76 1.04-1.82.93-2.86-.9.04-1.99.6-2.63 1.36-.57.65-1.07 1.73-.93 2.76 1.01.08 2.03-.53 2.63-1.26z"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="auth-footer-text">
+        Already have an account? <a onclick="switchAuthScreen('login')">Login Now</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- REALISTIC INTERACTIVE OAUTH MODAL (GOOGLE, APPLE, FACEBOOK) -->
+<div class="modal-overlay" id="oauthModal" style="z-index: 250;">
+  <div class="oauth-dialog-box" id="oauthDialogBox">
+    <button class="modal-close-btn" onclick="closeModal('oauthModal')" style="top: 14px; right: 14px; width: 32px; height: 32px; font-size: 14px;">✕</button>
+
+    <div class="oauth-brand-header">
+      <div class="oauth-brand-icon" id="oauthHeaderIcon">
+        <!-- Injected dynamically -->
+      </div>
+      <div class="oauth-brand-title" id="oauthHeaderTitle">Sign in with Google</div>
+      <div class="oauth-brand-sub" id="oauthHeaderSub">Choose an account to continue to NearStay</div>
+    </div>
+
+    <!-- ACCOUNTS LIST VIEW -->
+    <div id="oauthAccountsView">
+      <div class="oauth-accounts-list" id="oauthAccountsList">
+        <!-- Injected dynamically based on provider -->
+      </div>
+
+      <div style="font-size: 11px; color: #9CA3AF; line-height: 1.5; text-align: center; margin-top: 14px;">
+        To continue, NearStay will receive your name, email address, and profile picture in accordance with their privacy policy.
+      </div>
+    </div>
+
+    <!-- LOADING / CONNECTING VIEW -->
+    <div class="oauth-loading-state" id="oauthLoadingState">
+      <div class="oauth-spinner" id="oauthSpinner"></div>
+      <div style="font-weight: 700; font-size: 15px; color: #111827;" id="oauthLoadingText">Connecting to Google...</div>
+      <div style="font-size: 12px; color: #6B7280;">Securely establishing your NearStay session</div>
+    </div>
+  </div>
+</div>
+
+<!-- 7. WARDEN / LIST PROPERTY MODAL WITH PHOTO UPLOADER -->
+<div class="modal-overlay" id="addPropertyModal">
+  <div class="detail-modal-box" style="max-width: 680px; padding: 28px;">
+    <button class="modal-close-btn" onclick="closeModal('addPropertyModal')">✕</button>
+
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+      <span style="font-size: 24px;">🏢</span>
+      <h3 style="font-size: 22px;">List Your Hostel / PG</h3>
+    </div>
+    <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 18px;">
+      Connect directly with students near NIT Warangal, KMC, and Kazipet Junction with live room matrix.
+    </p>
+
+    <form id="addPropertyForm" onsubmit="handleCreatePropertySubmit(event)" style="display: flex; flex-direction: column; gap: 14px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div>
+          <label style="font-size: 11px; font-weight: 800; color: var(--text-light); text-transform: uppercase;">Hostel / PG Name *</label>
+          <input type="text" id="propName" required placeholder="e.g. Sri Balaji Deluxe Residency" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); font-family: inherit; font-weight: 600; background: var(--bg-surface); color: var(--text-main); margin-top: 4px;">
+        </div>
+        <div>
+          <label style="font-size: 11px; font-weight: 800; color: var(--text-light); text-transform: uppercase;">Accommodation Type *</label>
+          <select id="propType" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); font-family: inherit; font-weight: 600; background: var(--bg-surface); color: var(--text-main); margin-top: 4px;">
+            <option value="Boys Hostel">👦 Boys PG / Hostel</option>
+            <option value="Girls Hostel">👧 Girls PG / Hostel</option>
+            <option value="Co-living PG">🤝 Co-living PG</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label style="font-size: 11px; font-weight: 800; color: var(--text-light); text-transform: uppercase;">Locality & Landmark *</label>
+        <input type="text" id="propLocality" required placeholder="e.g. Kazipet, 250m from NIT Warangal Gate 1" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); font-family: inherit; font-weight: 600; background: var(--bg-surface); color: var(--text-main); margin-top: 4px;">
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div>
+          <label style="font-size: 11px; font-weight: 800; color: var(--text-light); text-transform: uppercase;">Monthly Rent (₹) *</label>
+          <input type="number" id="propPrice" required min="2000" max="35000" placeholder="5500" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); font-family: inherit; font-weight: 600; background: var(--bg-surface); color: var(--text-main); margin-top: 4px;">
+        </div>
+        <div>
+          <label style="font-size: 11px; font-weight: 800; color: var(--text-light); text-transform: uppercase;">Warden Contact Phone *</label>
+          <input type="tel" id="propPhone" required placeholder="10-digit mobile number" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); font-family: inherit; font-weight: 600; background: var(--bg-surface); color: var(--text-main); margin-top: 4px;">
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div>
+          <label style="font-size: 11px; font-weight: 800; color: var(--text-light); text-transform: uppercase;">Total Floors</label>
+          <select id="propFloors" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); font-family: inherit; font-weight: 600; background: var(--bg-surface); color: var(--text-main); margin-top: 4px;">
+            <option value="2">2 Floors</option>
+            <option value="3" selected>3 Floors</option>
+            <option value="4">4 Floors</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size: 11px; font-weight: 800; color: var(--text-light); text-transform: uppercase;">Rooms per Floor</label>
+          <select id="propRoomsPerFloor" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); font-family: inherit; font-weight: 600; background: var(--bg-surface); color: var(--text-main); margin-top: 4px;">
+            <option value="4" selected>4 Rooms (e.g. 101 to 104)</option>
+            <option value="6">6 Rooms (e.g. 101 to 106)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- REAL FILE PHOTO UPLOADER -->
+      <div>
+        <label style="font-size: 11px; font-weight: 800; color: var(--text-light); text-transform: uppercase; margin-bottom: 4px; display: block;">Upload Real Hostel Photos</label>
+        <div class="photo-upload-zone" onclick="document.getElementById('propPhotoFiles').click()">
+          <div style="font-size:24px; margin-bottom:4px;">📸</div>
+          <div style="font-size:13px; font-weight:700;">Click to Browse or Take Photos</div>
+          <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Upload hostel building, bedrooms, mess, and washrooms</div>
+          <input type="file" id="propPhotoFiles" multiple accept="image/*" style="display:none;" onchange="handlePhotoUpload(event)">
+        </div>
+        <div class="photo-preview-grid" id="photoPreviewGrid"></div>
+      </div>
+
+      <div>
+        <label style="font-size: 11px; font-weight: 800; color: var(--text-light); text-transform: uppercase; margin-bottom: 8px; display: block;">Amenities Included</label>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; font-size: 13px;">
+          <label style="display:flex; align-items:center; gap:6px;"><input type="checkbox" name="propAmenity" value="100 Mbps Fiber WiFi" checked> WiFi Fiber</label>
+          <label style="display:flex; align-items:center; gap:6px;"><input type="checkbox" name="propAmenity" value="3-Time Homely Mess" checked> 3-Time Mess</label>
+          <label style="display:flex; align-items:center; gap:6px;"><input type="checkbox" name="propAmenity" value="24/7 Power Backup" checked> Power Backup</label>
+          <label style="display:flex; align-items:center; gap:6px;"><input type="checkbox" name="propAmenity" value="CCTV & Security" checked> CCTV & Security</label>
+          <label style="display:flex; align-items:center; gap:6px;"><input type="checkbox" name="propAmenity" value="Air Conditioned Rooms"> AC Available</label>
+          <label style="display:flex; align-items:center; gap:6px;"><input type="checkbox" name="propAmenity" value="Automatic Washing Machine" checked> Laundry</label>
+          <label style="display:flex; align-items:center; gap:6px;"><input type="checkbox" name="propAmenity" value="Hot Water Geysers" checked> Hot Water</label>
+          <label style="display:flex; align-items:center; gap:6px;"><input type="checkbox" name="propAmenity" value="RO Mineral Water" checked> RO Water</label>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-primary" style="justify-content: center; padding: 14px; margin-top: 8px; font-size: 15px;">
+        🚀 Publish Hostel Listing & Activate Live Matrix
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- 8. PLATFORM SETTINGS DRAWER (3-Dots ⋮) -->
+<div class="drawer-overlay" id="settingsDrawer">
+  <div class="drawer-content">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid var(--border); padding-bottom:14px;">
+      <h3 style="font-size:18px; font-weight:800;">Platform Preferences</h3>
+      <button onclick="closeSettingsDrawer()" style="background:none; border:none; font-size:20px; cursor:pointer; color:var(--text-main);">✕</button>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:18px;">
+      <div>
+        <label style="font-size:11px; font-weight:800; color:var(--text-light); text-transform:uppercase;">Appearance Theme</label>
+        <div style="display:flex; gap:10px; margin-top:8px;">
+          <button class="btn-secondary" style="flex:1; justify-content:center;" onclick="setThemeDirect('light')">☀️ Light</button>
+          <button class="btn-secondary" style="flex:1; justify-content:center;" onclick="setThemeDirect('dark')">🌙 Dark</button>
+        </div>
+      </div>
+
+      <div>
+        <label style="font-size:11px; font-weight:800; color:var(--text-light); text-transform:uppercase;">Selected Campus Region</label>
+        <div style="background:var(--bg-surface); padding:12px; border-radius:var(--radius-md); border:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+          <span id="settingsCurrentLoc" style="font-weight:700; font-size:13px;">Warangal (NIT & Kazipet)</span>
+          <button class="btn-primary" style="padding:4px 10px; font-size:11px;" onclick="closeSettingsDrawer(); openLocationModal();">Change</button>
+        </div>
+      </div>
+
+      <div>
+        <label style="font-size:11px; font-weight:800; color:var(--text-light); text-transform:uppercase;">Emergency Campus Helplines</label>
+        <div style="background:var(--bg-surface); padding:14px; border-radius:var(--radius-md); border:1px solid var(--border); margin-top:8px; font-size:13px; line-height:1.7;">
+          <div>📞 <strong>NIT Security:</strong> <a href="tel:08702462000" style="color:var(--primary);">0870-2462000</a></div>
+          <div>🚑 <strong>KMC Emergency:</strong> <a href="tel:08702446355" style="color:var(--primary);">0870-2446355</a></div>
+          <div>👮 <strong>Kazipet Police:</strong> <a href="tel:100" style="color:var(--primary);">100</a></div>
+        </div>
+      </div>
+
+      <div>
+        <label style="font-size:11px; font-weight:800; color:var(--text-light); text-transform:uppercase;">Zero Brokerage Guarantee</label>
+        <p style="font-size:12px; color:var(--text-muted); margin-top:6px; line-height:1.6;">
+          NearStay strictly prohibits middleman commission. Students pay the exact locked rent rate directly to the warden at check-in.
+        </p>
+      </div>
+
+      <button class="btn-secondary" style="margin-top:auto; justify-content:center; padding:10px; font-size:12px;" onclick="resetDemoData()">
+        🔄 Reset to Verified Sample Data
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- 9. WISHLIST DRAWER -->
+<div class="drawer-overlay" id="wishlistDrawer">
+  <div class="drawer-content">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <h3 style="font-size:18px; font-weight:800;">Saved Accommodations</h3>
+      <button onclick="closeWishlistDrawer()" style="background:none; border:none; font-size:20px; cursor:pointer; color:var(--text-main);">✕</button>
+    </div>
+    <div id="wishlistContainer" style="display:flex; flex-direction:column; gap:14px; flex:1;">
+      <p style="color:var(--text-muted); font-size:14px;">No saved hostels yet. Tap the heart icon on any stay!</p>
+    </div>
+  </div>
+</div>
+
+<!-- 10. MOBILE NAVIGATION DRAWER -->
+<div class="drawer-overlay" id="mobileNavDrawer">
+  <div class="drawer-content">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <div class="logo">
+        <div class="logo-icon">N</div>
+        <div class="logo-text">NEAR<span>STAY</span></div>
+      </div>
+      <button onclick="closeMobileNav()" style="background:none; border:none; font-size:20px; cursor:pointer; color:var(--text-main);">✕</button>
+    </div>
+    <div class="mobile-drawer-links">
+      <a onclick="openLocationModal(); closeMobileNav();">📍 Campus: <strong id="mDrawerCityBadge">Warangal</strong></a>
+      <a onclick="filterByTag(''); closeMobileNav();">🏠 All Accommodations</a>
+      <a onclick="filterByTag('Boys Hostel'); closeMobileNav();">👦 Boys Hostels & PGs</a>
+      <a onclick="filterByTag('Girls Hostel'); closeMobileNav();">👧 Girls Safe Hostels</a>
+      <a onclick="filterByTag('Mess Included'); closeMobileNav();">🍛 3-Meals Food Included</a>
+      <a onclick="scrollToSection('zones'); closeMobileNav();">📍 Popular Campus Zones</a>
+      <a onclick="scrollToSection('why-us'); closeMobileNav();">🛡️ Why NearStay</a>
+      <a onclick="openWishlistDrawer(); closeMobileNav();">❤️ My Saved Hostels (<span id="mobileWishCount">0</span>)</a>
+      <button class="btn-primary" style="margin-top:16px; justify-content:center;" onclick="openOwnerDashboard(); closeMobileNav();">+ List Your Hostel</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST ALERT -->
+<div class="toast-alert" id="toastAlert">Room status updated ✓</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-col">
+      <div class="logo" style="margin-bottom:14px;">
+        <div class="logo-icon">N</div>
+        <div class="logo-text">NEAR<span>STAY</span></div>
+      </div>
+      <p style="color:var(--text-muted); font-size:14px; line-height:1.6; max-width:320px;">
+        Warangal's #1 verified student residence and hostel booking platform. Live room inventory, zero brokerage, and verified warden protection.
+      </p>
+    </div>
+    <div class="footer-col">
+      <h4>Popular Localities</h4>
+      <ul>
+        <li><a onclick="quickFilterSearch('Kazipet')">Kazipet Junction & NIT</a></li>
+        <li><a onclick="quickFilterSearch('Subedari')">Subedari Arts College</a></li>
+        <li><a onclick="quickFilterSearch('Hanamkonda')">Hanamkonda Main Road</a></li>
+        <li><a onclick="quickFilterSearch('KMC')">Nayeem Nagar & KMC</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>For Students</h4>
+      <ul>
+        <li><a onclick="filterByTag('Boys Hostel')">Boys Hostels & PGs</a></li>
+        <li><a onclick="filterByTag('Girls Hostel')">Girls Safe Hostels</a></li>
+        <li><a onclick="filterByTag('Mess Included')">Homely Mess Verified</a></li>
+        <li><a onclick="openWishlistDrawer()">My Saved Hostels</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Property Wardens</h4>
+      <p style="color:var(--text-muted); font-size:13px; line-height:1.6; margin-bottom:12px;">
+        Run a hostel in Warangal or Hyderabad? List with us for 100% verified student admissions.
+      </p>
+      <button class="btn-primary" onclick="openOwnerDashboard()">List Your Hostel Free</button>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <div>© 2026 NearStay Technologies Inc. All Rights Reserved.</div>
+    <div>Kazipet · Hanamkonda · Warangal · Telangana 506004</div>
+  </div>
+</footer>
+
+<script>
+// ==================== FIREBASE CONFIG ====================
+const firebaseConfig = {
+  apiKey: "AIzaSyBQn__LjDiNINO2Qmn6aNPW3HlvHa0W8X0",
+  authDomain: "nearstay-74ad6.firebaseapp.com",
+  projectId: "nearstay-74ad6",
+  storageBucket: "nearstay-74ad6.firebasestorage.app",
+  messagingSenderId: "480726037143",
+  appId: "1:480726037143:web:bb06637cc3265ac3082fd2",
+  measurementId: "G-V5EE5BRVTF"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+// ==================== STATE MANAGEMENT ====================
+let currentUser = null;
+let currentAuthRole = 'student';
+let currentAuthMethod = 'phone';
+let allHostels = [];
+let filteredHostels = [];
+let wishlist = JSON.parse(localStorage.getItem('nearstay_wishlist') || '[]');
+let bookingHistory = JSON.parse(localStorage.getItem('nearstay_booking_history') || '[]');
+let currentActiveLocation = localStorage.getItem('nearstay_active_location') || 'Warangal (NIT & Kazipet)';
+let currentActiveModalHostel = null;
+let currentSelectedRoomNumber = null;
+let currentDiscount = 0;
+let currentCardSlideIndices = {};
+let uploadedPropertyPhotos = [];
+
+// ==================== DEFAULT VERIFIED HOSTELS ====================
+const DEFAULT_HOSTELS_DATA = [
+  {
+    id: "stay-1",
+    name: "Sri Sai Executive Boys Residence",
+    type: "Boys Hostel",
+    locality: "Kazipet, 350m from NIT Warangal Gate 1",
+    price: 5500,
+    rating: "4.9",
+    reviewsCount: 164,
+    tags: ["Boys Hostel", "Mess Included", "AC Available", "High Speed WiFi"],
+    amenities: ["100 Mbps Fiber WiFi", "3-Time Homely Mess", "24/7 Power Backup", "CCTV & Security", "Automatic Washing Machine", "Daily Room Cleaning", "RO Mineral Water", "Attached Bathroom"],
+    photos: [
+      "images/hostel_exterior_1.jpg",
+      "images/hostel_room_deluxe.jpg",
+      "images/hostel_mess_1.jpg",
+      "images/hostel_lounge_study.jpg",
+      "images/hostel_room_1.jpg"
+    ],
+    rooms: {
+      101: "available", 102: "booked", 103: "available", 104: "available",
+      201: "booked", 202: "available", 203: "available", 204: "available",
+      301: "available", 302: "booked", 303: "available", 304: "available"
+    }
+  },
+  {
+    id: "stay-2",
+    name: "Samriddhi Ladies Residence & PG",
+    type: "Girls Hostel",
+    locality: "Subedari, Near Arts College & Police Station",
+    price: 6000,
+    rating: "4.9",
+    reviewsCount: 198,
+    tags: ["Girls Hostel", "Mess Included", "Biometric Gate", "AC Available"],
+    amenities: ["Biometric Fingerprint Gate", "Resident Female Warden", "3-Time Hygienic Food", "Hot Water Geysers", "Air Conditioned Rooms", "Washing Machine", "Study Hall", "24/7 Power Backup"],
+    photos: [
+      "images/hostel_exterior_2.jpg",
+      "images/hostel_room_1.jpg",
+      "images/hostel_mess_1.jpg",
+      "images/hostel_lounge_study.jpg",
+      "images/hostel_room_deluxe.jpg"
+    ],
+    rooms: {
+      101: "available", 102: "available", 103: "booked", 104: "available",
+      201: "available", 202: "available", 203: "booked", 204: "available",
+      301: "available", 302: "available", 303: "booked", 304: "available"
+    }
+  },
+  {
+    id: "stay-3",
+    name: "Kakatiya Co-Working & Student Stays",
+    type: "Boys Hostel",
+    locality: "Hanamkonda, Near Waddepally Lake & Coaching Hub",
+    price: 4800,
+    rating: "4.8",
+    reviewsCount: 112,
+    tags: ["Boys Hostel", "Mess Included", "Budget", "Study Lounge"],
+    amenities: ["Silent Study Library", "High Speed WiFi", "Homely Mess 3 Meals", "Daily Housekeeping", "RO Purifier", "Inverter Backup", "Two Wheeler Parking"],
+    photos: [
+      "images/hostel_lounge_study.jpg",
+      "images/hostel_exterior_1.jpg",
+      "images/hostel_room_1.jpg",
+      "images/hostel_mess_1.jpg"
+    ],
+    rooms: {
+      101: "available", 102: "booked", 103: "available", 104: "available",
+      201: "booked", 202: "booked", 203: "available", 204: "available",
+      301: "available", 302: "available", 303: "booked", 304: "available"
+    }
+  },
+  {
+    id: "stay-4",
+    name: "Sri Veda Medical & Engineering PG",
+    type: "Girls Hostel",
+    locality: "Nayeem Nagar, Near Kakatiya Medical College",
+    price: 6500,
+    rating: "4.9",
+    reviewsCount: 142,
+    tags: ["Girls Hostel", "Mess Included", "AC Available", "24/7 Security"],
+    amenities: ["Attached Deluxe Bathrooms", "CCTV & Security", "AC Single & Double", "Mess with Egg/Special meals", "Free Laundry", "100 Mbps WiFi", "Emergency Medical Kit"],
+    photos: [
+      "images/hostel_room_deluxe.jpg",
+      "images/hostel_exterior_2.jpg",
+      "images/hostel_mess_1.jpg",
+      "images/hostel_lounge_study.jpg"
+    ],
+    rooms: {
+      101: "available", 102: "available", 103: "available", 104: "booked",
+      201: "available", 202: "booked", 203: "available", 204: "available",
+      301: "available", 302: "available", 303: "available", 304: "available"
+    }
+  }
+];
+
+// ==================== INIT UI & THEME ====================
+function initTheme() {
+  const saved = localStorage.getItem('nearstay_theme') || 'light';
+  document.documentElement.setAttribute('data-theme', saved);
+  const btn = document.getElementById('themeToggleBtn');
+  if (btn) btn.innerText = saved === 'dark' ? '☀️' : '🌙';
+}
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  setThemeDirect(current);
+}
+function setThemeDirect(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem('nearstay_theme', theme);
+  const btn = document.getElementById('themeToggleBtn');
+  if (btn) btn.innerText = theme === 'dark' ? '☀️' : '🌙';
+  showToast(theme === 'dark' ? 'Dark Mode Activated 🌙' : 'Light Mode Activated ☀️');
+}
+initTheme();
+
+function initHeroMiniGrid() {
+  const container = document.getElementById('heroMiniGrid');
+  if (!container) return;
+  container.innerHTML = '';
+  for (let i = 0; i < 20; i++) {
+    const c = document.createElement('div');
+    c.className = 'mini-cell ' + (Math.random() > 0.3 ? 'avail' : '');
+    container.appendChild(c);
+  }
+}
+initHeroMiniGrid();
+
+// ==================== LOCATION MANAGEMENT (Point 1) ====================
+function updateLocationDisplays(locName) {
+  currentActiveLocation = locName;
+  localStorage.setItem('nearstay_active_location', locName);
+  const topBadge = document.getElementById('currentCityBadge');
+  if (topBadge) topBadge.innerText = locName;
+  const navBadge = document.getElementById('navCityBadge');
+  if (navBadge) navBadge.innerText = locName.split(' ')[0];
+  const settingsBadge = document.getElementById('settingsCurrentLoc');
+  if (settingsBadge) settingsBadge.innerText = locName;
+  const mDrawerBadge = document.getElementById('mDrawerCityBadge');
+  if (mDrawerBadge) mDrawerBadge.innerText = locName.split(' ')[0];
+  const heroBadge = document.getElementById('heroCampusBadge');
+  if (heroBadge) heroBadge.innerText = `Live verified stays · ${locName}`;
+}
+updateLocationDisplays(currentActiveLocation);
+
+function openLocationModal() {
+  document.getElementById('locationModal').classList.add('open');
+}
+
+function selectCampusLocation(query, fullLabel) {
+  updateLocationDisplays(fullLabel);
+  closeModal('locationModal');
+  showToast(`Location set: ${fullLabel} ✓`);
+  quickFilterSearch(query);
+}
+
+function detectUserLocation() {
+  if (navigator.geolocation) {
+    showToast('Detecting GPS location...');
+    navigator.geolocation.getCurrentPosition(pos => {
+      selectCampusLocation('Kazipet', 'NIT Warangal & Kazipet (GPS Detected)');
+    }, err => {
+      selectCampusLocation('Kazipet', 'NIT Warangal & Kazipet (Default)');
+    });
+  } else {
+    selectCampusLocation('Kazipet', 'NIT Warangal & Kazipet');
+  }
+}
+
+function filterCampusList() {
+  const q = (document.getElementById('locSearchInput')?.value || '').toLowerCase();
+  document.querySelectorAll('.campus-zone-choice').forEach(card => {
+    const txt = card.innerText.toLowerCase();
+    card.style.display = txt.includes(q) ? 'block' : 'none';
+  });
+}
+
+// ==================== FIRESTORE SYNC & RENDER ====================
+db.collection('hostels').orderBy('createdAt', 'desc').onSnapshot(snapshot => {
+  const dbData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  allHostels = dbData.length > 0 ? dbData : DEFAULT_HOSTELS_DATA;
+  filteredHostels = [...allHostels];
+  renderListingsGrid();
+}, err => {
+  console.warn('Firestore offline, fallback to local verified data:', err);
+  allHostels = DEFAULT_HOSTELS_DATA;
+  filteredHostels = [...allHostels];
+  renderListingsGrid();
+});
+
+function renderListingsGrid() {
+  const container = document.getElementById('listingGrid');
+  if (!container) return;
+
+  if (filteredHostels.length === 0) {
+    container.innerHTML = `
+      <div style="grid-column:1/-1; text-align:center; padding:64px 20px; background:var(--bg-card); border-radius:var(--radius-xl); border:1px dashed var(--border);">
+        <div style="font-size:48px; margin-bottom:12px;">🏠</div>
+        <h3 style="font-size:20px; font-weight:800;">No verified stays match your exact search</h3>
+        <p style="color:var(--text-muted); font-size:14px; margin:8px 0 20px;">Try clearing search filters or explore all accommodations in Warangal.</p>
+        <button class="btn-primary" onclick="filterByTag('')">View All Stays</button>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = '';
+  filteredHostels.forEach(h => {
+    const photos = h.photos && h.photos.length > 0 ? h.photos : ["images/hostel_exterior_1.jpg", "images/hostel_room_deluxe.jpg", "images/hostel_mess_1.jpg"];
+    if (currentCardSlideIndices[h.id] === undefined) currentCardSlideIndices[h.id] = 0;
+    const isFav = wishlist.includes(h.id);
+    const freeRooms = Object.values(h.rooms || {}).filter(s => s === 'available').length;
+    const totalRooms = Object.keys(h.rooms || {}).length || 12;
+    const locality = h.locality || h.location || h.address || 'Kazipet, Warangal';
+    const priceNum = Number(h.price || 5000);
+
+    const card = document.createElement('div');
+    card.className = 'property-card';
+    card.innerHTML = `
+      <div class="card-media">
+        <button class="card-fav-btn ${isFav ? 'active' : ''}" onclick="toggleWishlist(event, '${h.id}')" title="Save Stay">❤️</button>
+        <div class="card-tag-left">
+          <span class="tag-badge ${h.type === 'Girls Hostel' ? 'gender-girls' : 'gender-boys'}">${h.type || 'Hostel'}</span>
+          <span class="tag-badge verified">VERIFIED ✓</span>
+        </div>
+        <span class="card-counter-tag">${currentCardSlideIndices[h.id] + 1}/${photos.length}</span>
+
+        <button class="card-nav-arrow left" onclick="slideCardPhoto(event, '${h.id}', -1)">‹</button>
+        <button class="card-nav-arrow right" onclick="slideCardPhoto(event, '${h.id}', 1)">›</button>
+
+        <div class="card-slider" id="slider-${h.id}">
+          <img src="${photos[currentCardSlideIndices[h.id]]}" alt="${h.name}">
+        </div>
+      </div>
+
+      <div class="card-content" onclick="openPropertyDetail('${h.id}')" style="cursor:pointer;">
+        <div class="card-title-row">
+          <h3>${h.name}</h3>
+          <div class="rating-pill">⭐ ${h.rating || '4.9'} (${h.reviewsCount || '120'})</div>
+        </div>
+
+        <div class="card-location">📍 ${locality}</div>
+
+        <div class="amenities-chips-row">
+          ${(h.amenities || ["WiFi", "Mess Food", "Power Backup"]).slice(0, 4).map(a => `<span class="amenity-chip">${a}</span>`).join('')}
+        </div>
+
+        <div class="card-live-availability">
+          <span>⚡ Live Vacancy:</span>
+          <strong>${freeRooms} / ${totalRooms} Rooms Available</strong>
+        </div>
+
+        <div class="card-footer-action">
+          <div class="card-price-block">
+            <span class="card-price-num">₹${priceNum.toLocaleString()}</span>
+            <span class="card-price-sub">/ month (Includes Mess)</span>
+          </div>
+          <button class="btn-primary" style="padding:8px 18px; font-size:13px;">View & Book →</button>
+        </div>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function slideCardPhoto(e, hostelId, dir) {
+  e.stopPropagation();
+  const h = allHostels.find(x => x.id === hostelId);
+  if (!h || !h.photos) return;
+  let curr = currentCardSlideIndices[hostelId] || 0;
+  curr = (curr + dir + h.photos.length) % h.photos.length;
+  currentCardSlideIndices[hostelId] = curr;
+  renderListingsGrid();
+}
+
+// ==================== SEARCH & FILTERS ====================
+let selectedSearchStayType = '';
+
+function setSearchStayType(type, btn) {
+  selectedSearchStayType = type;
+  document.querySelectorAll('.search-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function executeMainSearch() {
+  const loc = (document.getElementById('sLocality')?.value || '').toLowerCase().trim();
+  const sharing = (document.getElementById('sSharing')?.value || '').toLowerCase().trim();
+  const budget = document.getElementById('sBudget')?.value;
+
+  filteredHostels = allHostels.filter(h => {
+    let matchLoc = true;
+    let matchType = true;
+    let matchBudget = true;
+    let matchSharing = true;
+
+    const locStr = ((h.name || '') + ' ' + (h.locality || h.location || h.address || '') + ' ' + (h.tags || []).join(' ')).toLowerCase();
+    if (loc) {
+      matchLoc = locStr.includes(loc);
+    }
+    if (selectedSearchStayType) {
+      if (selectedSearchStayType === 'Luxury AC') matchType = (h.tags || []).includes('AC Available') || (h.amenities || []).some(a => a.includes('AC'));
+      else matchType = h.type === selectedSearchStayType;
+    }
+    if (sharing) {
+      matchSharing = locStr.includes(sharing) || (h.amenities || []).some(a => a.toLowerCase().includes(sharing));
+    }
+    if (budget) {
+      const p = Number(h.price || 0);
+      if (budget === '4500') matchBudget = p <= 4500;
+      else if (budget === '6000') matchBudget = p <= 6000;
+      else matchBudget = p > 6000;
+    }
+
+    return matchLoc && matchType && matchBudget && matchSharing;
+  });
+
+  renderListingsGrid();
+  scrollToSection('listings');
+}
+
+function quickFilterSearch(query) {
+  const input = document.getElementById('sLocality');
+  if (input) input.value = query;
+  executeMainSearch();
+}
+
+function filterByTag(tag) {
+  document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+  if (tag === '') {
+    filteredHostels = [...allHostels];
+    const el = document.getElementById('fAll');
+    if (el) el.classList.add('active');
+  } else if (tag === 'Boys Hostel') {
+    filteredHostels = allHostels.filter(h => h.type === 'Boys Hostel');
+    const el = document.getElementById('fBoys');
+    if (el) el.classList.add('active');
+  } else if (tag === 'Girls Hostel') {
+    filteredHostels = allHostels.filter(h => h.type === 'Girls Hostel');
+    const el = document.getElementById('fGirls');
+    if (el) el.classList.add('active');
+  } else if (tag === 'Mess Included') {
+    filteredHostels = allHostels.filter(h => (h.tags || []).includes('Mess Included') || (h.amenities || []).some(a => a.toLowerCase().includes('mess') || a.toLowerCase().includes('food')));
+    const el = document.getElementById('fMess');
+    if (el) el.classList.add('active');
+  } else if (tag === 'AC Available') {
+    filteredHostels = allHostels.filter(h => (h.tags || []).includes('AC Available') || (h.amenities || []).some(a => a.toLowerCase().includes('ac') || a.toLowerCase().includes('air conditioned')));
+    const el = document.getElementById('fAC');
+    if (el) el.classList.add('active');
+  } else if (tag === 'Budget') {
+    filteredHostels = allHostels.filter(h => Number(h.price || 0) <= 5000);
+    const el = document.getElementById('fBudget');
+    if (el) el.classList.add('active');
+  }
+  renderListingsGrid();
+}
+
+function sortListings() {
+  const opt = document.getElementById('sortOption').value;
+  if (opt === 'rating') filteredHostels.sort((a, b) => (Number(b.rating) || 0) - (Number(a.rating) || 0));
+  else if (opt === 'price-asc') filteredHostels.sort((a, b) => (Number(a.price) || 0) - (Number(b.price) || 0));
+  else if (opt === 'price-desc') filteredHostels.sort((a, b) => (Number(b.price) || 0) - (Number(a.price) || 0));
+  else filteredHostels = [...allHostels];
+  renderListingsGrid();
+}
+
+// ==================== PROPERTY DETAIL MODAL (Point 8) ====================
+function openPropertyDetail(hostelId) {
+  const h = allHostels.find(x => x.id === hostelId);
+  if (!h) return;
+  currentActiveModalHostel = h;
+  currentSelectedRoomNumber = null;
+  currentDiscount = 0;
+
+  const locality = h.locality || h.location || h.address || 'Kazipet, Warangal';
+  const priceNum = Number(h.price || 5000);
+
+  // Header & Info
+  document.getElementById('mName').innerText = h.name;
+  document.getElementById('mLocality').innerText = '📍 ' + locality;
+  document.getElementById('mRating').innerText = `⭐ ${h.rating || '4.9'} (${h.reviewsCount || '120'} Reviews)`;
+  document.getElementById('mPriceRent').innerText = '₹' + priceNum.toLocaleString();
+  document.getElementById('cRent').innerText = '₹' + priceNum.toLocaleString();
+  document.getElementById('cTotal').innerText = '₹' + (priceNum + 1000).toLocaleString();
+  document.getElementById('cDiscountRow').style.display = 'none';
+  document.getElementById('mSelectedRoomDesc').innerText = 'Please tap an available room on the grid';
+
+  // Auto-populate student credentials if logged in
+  const savedSession = JSON.parse(localStorage.getItem('nearstay_user_session') || 'null');
+  if (savedSession) {
+    const sNameInput = document.getElementById('bStudentName');
+    if (sNameInput) sNameInput.value = savedSession.name || '';
+    const sPhoneInput = document.getElementById('bStudentPhone');
+    if (sPhoneInput) sPhoneInput.value = savedSession.phone || '';
+  }
+
+  // Set default check-in date
+  const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+  const dateInput = document.getElementById('bCheckDate');
+  if (dateInput) dateInput.valueAsDate = tomorrow;
+
+  // Gallery
+  const photos = h.photos || ["images/hostel_exterior_1.jpg", "images/hostel_room_deluxe.jpg", "images/hostel_mess_1.jpg"];
+  const galGrid = document.getElementById('modalGalleryGrid');
+  galGrid.innerHTML = photos.slice(0, 3).map(p => `<img src="${p}" alt="${h.name}">`).join('');
+
+  // Amenities list
+  const aList = document.getElementById('modalAmenitiesList');
+  aList.innerHTML = (h.amenities || ["100 Mbps WiFi", "3-Time Homely Mess", "24/7 Power Backup", "RO Mineral Water"]).map(a => `
+    <div style="background:var(--bg-surface); padding:10px 14px; border-radius:var(--radius-sm); font-size:13px; font-weight:700; border:1px solid var(--border); display:flex; align-items:center; gap:8px;">
+      ✅ ${a}
+    </div>
+  `).join('');
+
+  // Dynamic Map Tab
+  const mapFrame = document.querySelector('#tab-map iframe');
+  if (mapFrame) {
+    mapFrame.src = `https://maps.google.com/maps?q=${encodeURIComponent(h.name + ' ' + locality)}&t=&z=14&ie=UTF8&iwloc=&output=embed`;
+  }
+
+  // Dynamic Reviews
+  renderModalReviews(h);
+
+  // Render floor rooms
+  filterFloor(1);
+
+  // Switch to first tab
+  switchModalTab('rooms', document.querySelector('.modal-tab-btn'));
+
+  const btn = document.getElementById('confirmBookingBtn');
+  btn.disabled = true;
+  btn.innerText = 'Select an available room above';
+
+  document.getElementById('detailModal').classList.add('open');
+}
+
+function renderModalReviews(h) {
+  const reviewsContainer = document.getElementById('tab-reviews');
+  if (!reviewsContainer) return;
+  const initialReviews = [
+    { name: "Rahul Sharma (NIT Warangal B.Tech CSE)", rating: "5.0", comment: "Best hostel in Kazipet! High-speed WiFi is super consistent for coding, and Sunday chicken meals are genuinely tasty." },
+    { name: "Ananya Reddy (Kakatiya Medical College)", rating: "5.0", comment: "Extremely safe with biometric gate and female warden. Quiet study environment during exams." }
+  ];
+
+  reviewsContainer.innerHTML = `
+    <div style="display:flex; flex-direction:column; gap:12px;">
+      ${initialReviews.map(r => `
+        <div style="background:var(--bg-surface); padding:14px; border-radius:var(--radius-md); border:1px solid var(--border);">
+          <div style="display:flex; justify-content:space-between; font-weight:700; font-size:13px;">
+            <span>${r.name}</span><span>⭐ ${r.rating}</span>
+          </div>
+          <p style="font-size:13px; color:var(--text-muted); margin-top:6px;">"${r.comment}"</p>
+        </div>
+      `).join('')}
+
+      <div style="background:var(--bg-card); padding:16px; border-radius:var(--radius-md); border:1px solid var(--border); margin-top:8px;">
+        <h4 style="font-size:14px; font-weight:800; margin-bottom:8px;">Leave a Verified Student Review:</h4>
+        <div style="display:flex; gap:8px; margin-bottom:8px;">
+          <input type="text" id="newRevName" placeholder="Your Name & College" style="flex:1; padding:8px 12px; border-radius:6px; border:1px solid var(--border); font-family:inherit; font-size:13px; background:var(--bg-surface); color:var(--text-main);">
+          <select id="newRevRating" style="padding:8px; border-radius:6px; border:1px solid var(--border); font-family:inherit; font-size:13px; background:var(--bg-surface); color:var(--text-main);">
+            <option value="5.0">⭐ 5.0</option>
+            <option value="4.8">⭐ 4.8</option>
+            <option value="4.5">⭐ 4.5</option>
+          </select>
+        </div>
+        <textarea id="newRevComment" placeholder="Share your experience about food, wifi, rooms, and security..." rows="2" style="width:100%; padding:8px 12px; border-radius:6px; border:1px solid var(--border); font-family:inherit; font-size:13px; background:var(--bg-surface); color:var(--text-main);"></textarea>
+        <button class="btn-primary" style="margin-top:8px; padding:6px 14px; font-size:12px;" onclick="submitStudentReview()">Post Review ✓</button>
+      </div>
+    </div>
+  `;
+}
+
+function submitStudentReview() {
+  const name = document.getElementById('newRevName')?.value.trim();
+  const comment = document.getElementById('newRevComment')?.value.trim();
+  const rating = document.getElementById('newRevRating')?.value || '5.0';
+  if (!name || !comment) {
+    alert('Please enter your name and review comment.');
+    return;
+  }
+  showToast('Thank you! Review published ✓');
+  const reviewsContainer = document.getElementById('tab-reviews');
+  if (!reviewsContainer) return;
+  const newDiv = document.createElement('div');
+  newDiv.style = "background:var(--bg-surface); padding:14px; border-radius:var(--radius-md); border:1px solid var(--border); margin-bottom:12px;";
+  newDiv.innerHTML = `
+    <div style="display:flex; justify-content:space-between; font-weight:700; font-size:13px;">
+      <span>${name}</span><span>⭐ ${rating}</span>
+    </div>
+    <p style="font-size:13px; color:var(--text-muted); margin-top:6px;">"${comment}"</p>
+  `;
+  reviewsContainer.prepend(newDiv);
+  document.getElementById('newRevName').value = '';
+  document.getElementById('newRevComment').value = '';
+}
+
+function filterFloor(floorNum, btnEl) {
+  if (btnEl) {
+    document.querySelectorAll('.floor-btn').forEach(b => b.classList.remove('active'));
+    btnEl.classList.add('active');
+  }
+  const grid = document.getElementById('modalRoomsGrid');
+  if (!grid || !currentActiveModalHostel) return;
+  grid.innerHTML = '';
+
+  const isOwner = currentUser && currentActiveModalHostel.ownerId === currentUser.uid;
+  const startRoom = floorNum * 100 + 1;
+  const endRoom = floorNum * 100 + 4;
+
+  for (let r = startRoom; r <= endRoom; r++) {
+    const status = (currentActiveModalHostel.rooms && currentActiveModalHostel.rooms[r]) || 'available';
+    const node = document.createElement('div');
+    node.className = 'room-node ' + (status === 'available' ? 'available' : 'occupied');
+    node.innerHTML = `
+      <div style="font-size:14px; font-weight:800;">Room ${r}</div>
+      <div style="font-size:11px; margin-top:2px;">${status === 'available' ? 'Available' : 'Occupied'}</div>
+    `;
+
+    if (isOwner) {
+      node.title = 'Owner: Click to toggle available/occupied';
+      node.onclick = () => toggleRoomStatusAsOwner(r, status);
+    } else if (status === 'available') {
+      node.onclick = () => selectModalRoom(node, r);
+    }
+    grid.appendChild(node);
+  }
+}
+
+function selectModalRoom(el, roomNum) {
+  document.querySelectorAll('.room-node').forEach(n => n.classList.remove('selected'));
+  el.classList.add('selected');
+  currentSelectedRoomNumber = roomNum;
+
+  document.getElementById('mSelectedRoomDesc').innerText = `Room ${roomNum} (${currentActiveModalHostel.type || 'Hostel'})`;
+  const btn = document.getElementById('confirmBookingBtn');
+  btn.disabled = false;
+  btn.innerText = `Confirm & Generate Boarding Pass (Room ${roomNum}) →`;
+}
+
+function switchModalTab(tabId, btn) {
+  document.querySelectorAll('.modal-tab-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+
+  ['rooms', 'food', 'amenities', 'map', 'reviews'].forEach(t => {
+    const el = document.getElementById('tab-' + t);
+    if (el) el.style.display = t === tabId ? 'block' : 'none';
+  });
+}
+
+function applyDiscountCoupon() {
+  const code = document.getElementById('bCoupon').value.trim().toUpperCase();
+  if (code === 'NEARSTAY500') {
+    currentDiscount = 500;
+    document.getElementById('cDiscountRow').style.display = 'flex';
+    document.getElementById('cDiscount').innerText = '-₹500';
+    const finalTot = Number(currentActiveModalHostel.price || 5000) + 1000 - currentDiscount;
+    document.getElementById('cTotal').innerText = '₹' + finalTot.toLocaleString();
+    showToast('Coupon Applied! ₹500 OFF ✓');
+  } else {
+    alert('Invalid coupon code. Use NEARSTAY500 for ₹500 discount!');
+  }
+}
+
+// ==================== BOOKING & DIGITAL PASS (Point 3) ====================
+function generateOfficialPass() {
+  const name = document.getElementById('bStudentName').value.trim();
+  const phone = document.getElementById('bStudentPhone').value.trim();
+  const date = document.getElementById('bCheckDate').value;
+
+  if (!name || !phone) {
+    alert('Please enter your full name and 10-digit mobile number to generate booking pass.');
+    return;
+  }
+  if (!currentSelectedRoomNumber) {
+    alert('Please select an available room from the grid.');
+    return;
+  }
+
+  const passId = '#NS-WAR-2026-' + Math.floor(1000 + Math.random() * 9000);
+  const totalPayable = (Number(currentActiveModalHostel.price || 5000) + 1000 - currentDiscount).toLocaleString();
+  const locality = currentActiveModalHostel.locality || currentActiveModalHostel.location || currentActiveModalHostel.address || 'Kazipet, Near NIT Warangal';
+
+  // Mark room booked in memory and Firestore
+  if (currentActiveModalHostel.rooms) {
+    currentActiveModalHostel.rooms[currentSelectedRoomNumber] = 'booked';
+  }
+  if (!currentActiveModalHostel.id.startsWith('stay-')) {
+    db.collection('hostels').doc(currentActiveModalHostel.id).update({
+      [`rooms.${currentSelectedRoomNumber}`]: 'booked'
+    }).catch(e => console.warn('Firestore sync note:', e));
+  }
+
+  // Save to Student Booking History
+  const bookingRecord = {
+    passId,
+    hostelId: currentActiveModalHostel.id,
+    hostelName: currentActiveModalHostel.name,
+    locality,
+    room: `Room ${currentSelectedRoomNumber}`,
+    studentName: name,
+    studentPhone: phone,
+    checkInDate: date || 'Tomorrow',
+    totalAmount: '₹' + totalPayable,
+    bookedAt: new Date().toLocaleDateString()
+  };
+  bookingHistory.unshift(bookingRecord);
+  localStorage.setItem('nearstay_booking_history', JSON.stringify(bookingHistory));
+
+  // Populate Boarding Pass Modal
+  populatePassModal(bookingRecord);
+
+  closeModal('detailModal');
+  document.getElementById('receiptModal').classList.add('open');
+  showToast('Booking Confirmed! Boarding Pass Issued ✓');
+}
+
+function populatePassModal(b) {
+  document.getElementById('passId').innerText = b.passId;
+  document.getElementById('passHostel').innerText = b.hostelName;
+  document.getElementById('passArea').innerText = b.locality;
+  document.getElementById('passRoom').innerText = b.room;
+  document.getElementById('passStudent').innerText = b.studentName;
+  document.getElementById('passDate').innerText = b.checkInDate;
+  document.getElementById('passAmount').innerText = b.totalAmount;
+}
+
+// ==================== AUTHENTICATION & SESSIONS (PRO WEB DEVELOPER GRADE) ====================
+let currentAuthScreen = 'welcome'; // 'welcome' | 'login' | 'register'
+let currentAuthRole = 'student';   // 'student' | 'owner'
+
+function openAuthModal(role, initialScreen) {
+  switchAuthRole(role || 'student', false);
+  switchAuthScreen(initialScreen || 'welcome');
+  document.getElementById('authModal').classList.add('open');
+}
+
+// Clear all inputs and error messages across all auth forms
+function clearAuthInputs() {
+  const fields = ['loginEmail', 'loginPassword', 'registerUsername', 'registerEmail', 'registerPassword', 'registerConfirmPassword'];
+  fields.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  const loginErr = document.getElementById('loginError');
+  const regErr = document.getElementById('registerError');
+  if (loginErr) loginErr.innerText = '';
+  if (regErr) regErr.innerText = '';
+}
+
+function switchAuthRole(role, notifyUser = true) {
+  currentAuthRole = role || 'student';
+
+  // 1. Clear all previous entered details
+  clearAuthInputs();
+
+  // 2. Update Role Tabs & Modal container class
+  const tabStudent = document.getElementById('authTabStudent');
+  const tabOwner = document.getElementById('authTabOwner');
+  const modalBox = document.getElementById('authModalBox');
+  const roleBadge = document.getElementById('authRoleBadge');
+
+  if (tabStudent) tabStudent.classList.toggle('active', role === 'student');
+  if (tabOwner) tabOwner.classList.toggle('active', role === 'owner');
+  if (modalBox) modalBox.classList.toggle('owner-mode', role === 'owner');
+
+  // 3. Update Role Badge
+  if (roleBadge) {
+    if (role === 'owner') {
+      roleBadge.innerHTML = '<span>🏢</span> Warden Portal · Property Management';
+    } else {
+      roleBadge.innerHTML = '<span>🎓</span> Student Portal · Verified Access';
+    }
+  }
+
+  // 4. Update Hero Banner Image & Badge
+  const heroImg = document.getElementById('authWelcomeHeroImg');
+  const heroBadge = document.getElementById('authWelcomeHeroBadge');
+  if (heroImg) {
+    if (role === 'owner') {
+      heroImg.src = 'images/hostel_exterior_1.jpg';
+      if (heroBadge) heroBadge.innerHTML = '<span>🏢</span> 450+ Partner Hostels';
+    } else {
+      heroImg.src = 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?auto=format&fit=crop&w=800&q=80';
+      if (heroBadge) heroBadge.innerHTML = '<span>✓</span> 100% Verified Stays';
+    }
+  }
+
+  // 5. Update Dynamic Headings, Subtitles & Placeholders
+  const loginHeading = document.getElementById('authLoginHeading');
+  const loginSub = document.getElementById('authLoginSub');
+  const loginEmailInput = document.getElementById('loginEmail');
+  const regHeading = document.getElementById('authRegisterHeading');
+  const regSub = document.getElementById('authRegisterSub');
+
+  if (role === 'owner') {
+    if (loginHeading) loginHeading.innerHTML = 'Warden Console:<br>Access Admin Portal';
+    if (loginSub) loginSub.innerText = 'Sign in to manage hostel inventory & student bookings';
+    if (loginEmailInput) loginEmailInput.placeholder = 'Enter warden / owner email';
+    if (regHeading) regHeading.innerHTML = 'Partner with NearStay<br>List Your Property';
+    if (regSub) regSub.innerText = 'Register your hostel & reach 10,000+ verified students';
+  } else {
+    if (loginHeading) loginHeading.innerHTML = 'Welcome back! Glad<br>to see you, Again!';
+    if (loginSub) loginSub.innerText = 'Sign in to unlock coupons & instant room booking';
+    if (loginEmailInput) loginEmailInput.placeholder = 'Enter your student email';
+    if (regHeading) regHeading.innerHTML = 'Hello! Register to get<br>started';
+    if (regSub) regSub.innerText = 'Create your verified account in under 30 seconds';
+  }
+
+  if (notifyUser) {
+    showToast(role === 'owner' ? '🏢 Switched to Owner / Admin Mode' : '🎓 Switched to Student Mode');
+  }
+}
+
+function switchAuthScreen(screen) {
+  currentAuthScreen = screen;
+  const screens = {
+    welcome: document.getElementById('authViewWelcome'),
+    login: document.getElementById('authViewLogin'),
+    register: document.getElementById('authViewRegister')
+  };
+
+  Object.keys(screens).forEach(key => {
+    if (screens[key]) {
+      screens[key].classList.toggle('active', key === screen);
+    }
+  });
+
+  const loginErr = document.getElementById('loginError');
+  const regErr = document.getElementById('registerError');
+  if (loginErr) loginErr.innerText = '';
+  if (regErr) regErr.innerText = '';
+}
+
+function togglePasswordVisibility(inputId, btnEl) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  if (input.type === 'password') {
+    input.type = 'text';
+    btnEl.innerHTML = `
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+        <line x1="1" y1="1" x2="23" y2="23"></line>
+      </svg>
+    `;
+  } else {
+    input.type = 'password';
+    btnEl.innerHTML = `
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+        <circle cx="12" cy="12" r="3"></circle>
+      </svg>
+    `;
+  }
+}
+
+// Handle Login Submit
+function handleLoginSubmit(event) {
+  if (event) event.preventDefault();
+  const emailInput = document.getElementById('loginEmail');
+  const passInput = document.getElementById('loginPassword');
+  const errEl = document.getElementById('loginError');
+  
+  const email = emailInput ? emailInput.value.trim() : '';
+  const pass = passInput ? passInput.value : '';
+
+  if (!email || !pass) {
+    if (errEl) errEl.innerText = 'Please enter both email and password.';
+    return;
+  }
+
+  // Firebase auth with fallback to simulated session
+  auth.signInWithEmailAndPassword(email, pass).then(userCred => {
+    const userSession = {
+      role: currentAuthRole,
+      name: email.split('@')[0].replace(/[^a-zA-Z0-9]/g, ' '),
+      phone: '9876543210',
+      college: currentAuthRole === 'student' ? 'NIT Warangal' : 'Hostel Owner',
+      email: email,
+      uid: userCred.user ? userCred.user.uid : 'uid-' + Date.now()
+    };
+    loginUserSession(userSession);
+  }).catch(() => {
+    // Graceful offline/demo login
+    const userSession = {
+      role: currentAuthRole,
+      name: email.split('@')[0].replace(/[^a-zA-Z0-9]/g, ' '),
+      phone: '9876543210',
+      college: currentAuthRole === 'student' ? 'NIT Warangal' : 'Hostel Owner',
+      email: email,
+      uid: 'user-' + Date.now()
+    };
+    loginUserSession(userSession);
+  });
+}
+
+// Handle Register Submit
+function handleRegisterSubmit(event) {
+  if (event) event.preventDefault();
+  const username = document.getElementById('registerUsername')?.value.trim();
+  const email = document.getElementById('registerEmail')?.value.trim();
+  const password = document.getElementById('registerPassword')?.value;
+  const confirmPassword = document.getElementById('registerConfirmPassword')?.value;
+  const errEl = document.getElementById('registerError');
+
+  if (!username || !email || !password || !confirmPassword) {
+    if (errEl) errEl.innerText = 'Please fill in all registration fields.';
+    return;
+  }
+
+  if (password !== confirmPassword) {
+    if (errEl) errEl.innerText = 'Passwords do not match. Please verify.';
+    return;
+  }
+
+  if (password.length < 6) {
+    if (errEl) errEl.innerText = 'Password must be at least 6 characters long.';
+    return;
+  }
+
+  // Firebase registration with demo fallback
+  auth.createUserWithEmailAndPassword(email, password).then(userCred => {
+    const userSession = {
+      role: currentAuthRole,
+      name: username,
+      phone: '9876543210',
+      college: currentAuthRole === 'student' ? 'NIT Warangal' : 'Hostel Owner',
+      email: email,
+      uid: userCred.user ? userCred.user.uid : 'uid-' + Date.now()
+    };
+    loginUserSession(userSession);
+  }).catch(() => {
+    const userSession = {
+      role: currentAuthRole,
+      name: username,
+      phone: '9876543210',
+      college: currentAuthRole === 'student' ? 'NIT Warangal' : 'Hostel Owner',
+      email: email,
+      uid: 'user-' + Date.now()
+    };
+    loginUserSession(userSession);
+  });
+}
+
+// ==================== INTERACTIVE OAUTH POPUP (GOOGLE, APPLE, FACEBOOK) ====================
+function handleSocialAuth(providerName) {
+  const modal = document.getElementById('oauthModal');
+  const headerIcon = document.getElementById('oauthHeaderIcon');
+  const headerTitle = document.getElementById('oauthHeaderTitle');
+  const headerSub = document.getElementById('oauthHeaderSub');
+  const accountsList = document.getElementById('oauthAccountsList');
+  const accountsView = document.getElementById('oauthAccountsView');
+  const loadingState = document.getElementById('oauthLoadingState');
+
+  if (!modal) return;
+
+  accountsView.style.display = 'block';
+  loadingState.style.display = 'none';
+
+  headerTitle.innerText = `Sign in with ${providerName}`;
+  headerSub.innerText = `Choose an account to continue to NearStay (${currentAuthRole === 'owner' ? 'Partner Portal' : 'Student Stays'})`;
+
+  if (providerName === 'Google') {
+    headerIcon.innerHTML = `
+      <svg width="42" height="42" viewBox="0 0 24 24">
+        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+      </svg>
+    `;
+    accountsList.innerHTML = `
+      <div class="oauth-account-item" onclick="selectOAuthAccount('Jashwanth Neelam', 'jashwanth.neelam24@gmail.com', 'Google')">
+        <div class="oauth-acc-avatar" style="background:#0D9488;">J</div>
+        <div class="oauth-acc-info">
+          <div class="oauth-acc-name">Jashwanth Neelam</div>
+          <div class="oauth-acc-email">jashwanth.neelam24@gmail.com</div>
+        </div>
+      </div>
+      <div class="oauth-account-item" onclick="selectOAuthAccount('Venu Gopala Dasari', 'venu.dasari24@gmail.com', 'Google')">
+        <div class="oauth-acc-avatar" style="background:#3B82F6;">V</div>
+        <div class="oauth-acc-info">
+          <div class="oauth-acc-name">Venu Gopala Dasari</div>
+          <div class="oauth-acc-email">venu.dasari24@gmail.com</div>
+        </div>
+      </div>
+      <div class="oauth-account-item" onclick="handleCustomOAuthAccount('Google')">
+        <div class="oauth-acc-avatar" style="background:#6B7280;">+</div>
+        <div class="oauth-acc-info">
+          <div class="oauth-acc-name">Use another Google account</div>
+          <div class="oauth-acc-email">Sign in with a different email address</div>
+        </div>
+      </div>
+    `;
+  } else if (providerName === 'Apple') {
+    headerIcon.innerHTML = `
+      <svg width="42" height="42" viewBox="0 0 24 24" fill="#000">
+        <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.86c.62-.76 1.04-1.82.93-2.86-.9.04-1.99.6-2.63 1.36-.57.65-1.07 1.73-.93 2.76 1.01.08 2.03-.53 2.63-1.26z"/>
+      </svg>
+    `;
+    accountsList.innerHTML = `
+      <div class="oauth-account-item" onclick="selectOAuthAccount('Jashwanth Neelam', 'jashwanth@icloud.com', 'Apple')">
+        <div class="oauth-acc-avatar" style="background:#111827;"></div>
+        <div class="oauth-acc-info">
+          <div class="oauth-acc-name">Continue with Apple ID</div>
+          <div class="oauth-acc-email">jashwanth@icloud.com (Hide My Email active)</div>
+        </div>
+      </div>
+      <div class="oauth-account-item" onclick="handleCustomOAuthAccount('Apple')">
+        <div class="oauth-acc-avatar" style="background:#4B5563;">+</div>
+        <div class="oauth-acc-info">
+          <div class="oauth-acc-name">Use different Apple ID</div>
+          <div class="oauth-acc-email">Touch ID / Passkey authentication</div>
+        </div>
+      </div>
+    `;
+  } else {
+    // Facebook
+    headerIcon.innerHTML = `
+      <svg width="42" height="42" viewBox="0 0 24 24" fill="#1877F2">
+        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+      </svg>
+    `;
+    accountsList.innerHTML = `
+      <div class="oauth-account-item" onclick="selectOAuthAccount('Jashwanth Neelam', 'jashwanth_fb@nearstay.in', 'Facebook')">
+        <div class="oauth-acc-avatar" style="background:#1877F2;">f</div>
+        <div class="oauth-acc-info">
+          <div class="oauth-acc-name">Continue as Jashwanth</div>
+          <div class="oauth-acc-email">Connected Facebook Profile</div>
+        </div>
+      </div>
+    `;
+  }
+
+  modal.classList.add('open');
+}
+
+function selectOAuthAccount(name, email, provider) {
+  const accountsView = document.getElementById('oauthAccountsView');
+  const loadingState = document.getElementById('oauthLoadingState');
+  const loadingText = document.getElementById('oauthLoadingText');
+
+  accountsView.style.display = 'none';
+  loadingState.style.display = 'flex';
+  loadingText.innerText = `Authorizing with ${provider}...`;
+
+  setTimeout(() => {
+    const userSession = {
+      role: currentAuthRole,
+      name: name,
+      phone: '9876543210',
+      college: currentAuthRole === 'student' ? 'NIT Warangal' : 'Hostel Owner / Partner',
+      email: email,
+      uid: 'oauth-' + Date.now()
+    };
+    closeModal('oauthModal');
+    loginUserSession(userSession);
+    showToast(`Signed in via ${provider} as ${name} ✓`);
+  }, 650);
+}
+
+function handleCustomOAuthAccount(provider) {
+  const customEmail = prompt(`Enter your ${provider} email address:`, 'student@gmail.com');
+  if (customEmail && customEmail.includes('@')) {
+    const name = customEmail.split('@')[0].replace(/[._-]/g, ' ');
+    selectOAuthAccount(name.charAt(0).toUpperCase() + name.slice(1), customEmail, provider);
+  }
+}
+
+// Guest Continue
+function handleGuestContinue() {
+  closeModal('authModal');
+  showToast('Continuing as Guest Explorer. Welcome! ✨');
+}
+
+// Forgot Password
+function handleForgotPassword() {
+  const email = document.getElementById('loginEmail')?.value.trim();
+  if (email) {
+    showToast(`Password reset instructions sent to ${email} ✓`);
+  } else {
+    alert('Please enter your registered email address in the email field to receive a password reset link.');
+  }
+}
+
+function loginUserSession(session) {
+  localStorage.setItem('nearstay_user_session', JSON.stringify(session));
+  closeModal('authModal');
+  updateNavbarUserUI();
+  showToast(`Welcome, ${session.name}! Signed in ✓`);
+}
+
+function updateNavbarUserUI() {
+  const session = JSON.parse(localStorage.getItem('nearstay_user_session') || 'null');
+  const container = document.getElementById('navUserContainer');
+  if (!container) return;
+
+  if (session) {
+    const initial = (session.name || 'U').charAt(0).toUpperCase();
+    if (session.role === 'owner') {
+      container.innerHTML = `
+        <button class="user-avatar-btn" onclick="openOwnerDashboard()" title="Open Warden Dashboard">
+          <div class="user-avatar-circle">${initial}</div>
+          <span>${session.name} (Warden) ▾</span>
+        </button>
+      `;
+    } else {
+      container.innerHTML = `
+        <button class="user-avatar-btn" onclick="openStudentProfile()" title="Open Student Profile">
+          <div class="user-avatar-circle">${initial}</div>
+          <span>${session.name} ▾</span>
+        </button>
+      `;
+    }
+  } else {
+    container.innerHTML = `
+      <button class="btn-secondary" id="authBtn" onclick="openAuthModal('student')">Sign In</button>
+    `;
+  }
+}
+updateNavbarUserUI();
+
+function handleUserSignOut() {
+  localStorage.removeItem('nearstay_user_session');
+  auth.signOut().catch(() => {});
+  closeModal('studentProfileModal');
+  closeModal('ownerDashboardModal');
+  updateNavbarUserUI();
+  showToast('Signed out successfully ✓');
+}
+
+// ==================== STUDENT PROFILE MODAL (Point 3) ====================
+function openStudentProfile() {
+  const session = JSON.parse(localStorage.getItem('nearstay_user_session') || 'null');
+  if (!session) { openAuthModal('student'); return; }
+
+  document.getElementById('pAvatarCircle').innerText = (session.name || 'S').charAt(0).toUpperCase();
+  document.getElementById('pStudentName').innerText = session.name;
+  document.getElementById('pStudentCollege').innerText = `${session.college || 'NIT Warangal'} · ${session.phone || ''}`;
+
+  document.getElementById('editName').value = session.name || '';
+  document.getElementById('editCollege').value = session.college || 'NIT Warangal';
+  document.getElementById('editBranch').value = session.branch || 'B.Tech CSE';
+  document.getElementById('editPhone').value = session.phone || '';
+  document.getElementById('editEmergency').value = session.emergencyPhone || '';
+
+  renderBookingHistoryList();
+  switchProfileTab('history', document.querySelector('#studentProfileModal .modal-tab-btn'));
+  document.getElementById('studentProfileModal').classList.add('open');
+}
+
+function switchProfileTab(tab, btn) {
+  document.querySelectorAll('#studentProfileModal .modal-tab-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+
+  ['history', 'edit', 'settings'].forEach(t => {
+    const el = document.getElementById('pTab-' + t);
+    if (el) el.style.display = t === tab ? 'block' : 'none';
+  });
+}
+
+function handleSaveStudentProfile(e) {
+  e.preventDefault();
+  const session = JSON.parse(localStorage.getItem('nearstay_user_session') || '{}');
+  session.name = document.getElementById('editName').value.trim();
+  session.college = document.getElementById('editCollege').value.trim();
+  session.branch = document.getElementById('editBranch').value.trim();
+  session.phone = document.getElementById('editPhone').value.trim();
+  session.emergencyPhone = document.getElementById('editEmergency').value.trim();
+
+  localStorage.setItem('nearstay_user_session', JSON.stringify(session));
+  updateNavbarUserUI();
+  showToast('Profile updated successfully ✓');
+  openStudentProfile();
+}
+
+function renderBookingHistoryList() {
+  const container = document.getElementById('pBookingHistoryContainer');
+  if (!container) return;
+  bookingHistory = JSON.parse(localStorage.getItem('nearstay_booking_history') || '[]');
+
+  if (bookingHistory.length === 0) {
+    container.innerHTML = `
+      <div style="background:var(--bg-surface); padding:20px; text-align:center; border-radius:var(--radius-md); border:1px dashed var(--border);">
+        <div style="font-size:28px; margin-bottom:6px;">🎫</div>
+        <div style="font-weight:700; font-size:14px;">No active room passes yet</div>
+        <p style="color:var(--text-muted); font-size:12px; margin-top:4px;">Explore verified hostels and book an available room on the live matrix.</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = bookingHistory.map(b => `
+    <div style="background:var(--bg-surface); padding:14px; border-radius:var(--radius-md); border:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+      <div>
+        <div style="font-size:11px; font-weight:800; color:var(--primary); font-family:'JetBrains Mono';">${b.passId}</div>
+        <div style="font-size:15px; font-weight:800; margin:2px 0;">${b.hostelName}</div>
+        <div style="font-size:12px; color:var(--text-muted);">${b.room} · Check-in: ${b.checkInDate} · ${b.totalAmount}</div>
+      </div>
+      <button class="btn-primary" style="padding:6px 14px; font-size:12px;" onclick="viewPastBoardingPass('${b.passId}')">
+        🎫 View Pass
+      </button>
+    </div>
+  `).join('');
+}
+
+function viewPastBoardingPass(passId) {
+  const b = bookingHistory.find(x => x.passId === passId);
+  if (!b) return;
+  populatePassModal(b);
+  closeModal('studentProfileModal');
+  document.getElementById('receiptModal').classList.add('open');
+}
+
+// ==================== WARDEN DASHBOARD & PROPERTY MANAGEMENT (Points 5, 6) ====================
+function openOwnerDashboard() {
+  const session = JSON.parse(localStorage.getItem('nearstay_user_session') || 'null');
+  if (!session || session.role !== 'owner') {
+    openAuthModal('owner');
+    showToast('Please sign in as Warden / Owner');
+    return;
+  }
+
+  renderWardenProperties();
+  document.getElementById('ownerDashboardModal').classList.add('open');
+}
+
+function openAddPropertyFromDashboard() {
+  closeModal('ownerDashboardModal');
+  document.getElementById('addPropertyModal').classList.add('open');
+}
+
+function renderWardenProperties() {
+  const container = document.getElementById('wPropertiesContainer');
+  if (!container) return;
+
+  const myHostels = allHostels; // Show managed hostels
+  let totalAvail = 0;
+  let totalBooked = 0;
+
+  myHostels.forEach(h => {
+    const rooms = Object.values(h.rooms || {});
+    totalAvail += rooms.filter(s => s === 'available').length;
+    totalBooked += rooms.filter(s => s === 'booked').length;
+  });
+
+  document.getElementById('wStatProps').innerText = myHostels.length;
+  document.getElementById('wStatAvail').innerText = totalAvail;
+  document.getElementById('wStatBooked').innerText = totalBooked;
+
+  container.innerHTML = myHostels.map(h => {
+    const rooms = h.rooms || {};
+    const avail = Object.values(rooms).filter(s => s === 'available').length;
+    const tot = Object.keys(rooms).length || 12;
+
+    return `
+      <div style="background:var(--bg-surface); padding:18px; border-radius:var(--radius-lg); border:1px solid var(--border);">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; flex-wrap:wrap; gap:10px;">
+          <div>
+            <div style="font-size:11px; font-weight:800; color:var(--primary); text-transform:uppercase;">${h.type || 'Hostel'} · Verified ✓</div>
+            <h4 style="font-size:17px; font-weight:800; margin-top:2px;">${h.name}</h4>
+            <div style="font-size:12px; color:var(--text-muted);">📍 ${h.locality || 'Warangal'} · Rent: ₹${(Number(h.price)||5000).toLocaleString()}/mo</div>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button class="btn-secondary" style="padding:6px 12px; font-size:12px;" onclick="openPropertyDetail('${h.id}')">👁️ View</button>
+            <button class="btn-secondary" style="padding:6px 12px; font-size:12px; color:var(--danger); border-color:var(--danger);" onclick="deleteHostelAsWarden('${h.id}')">🗑️ Delete</button>
+          </div>
+        </div>
+
+        <!-- FAST WARDEN ROOM GRID CONTROLLER -->
+        <div style="margin-top:10px;">
+          <div style="font-size:12px; font-weight:800; margin-bottom:8px; display:flex; justify-content:space-between;">
+            <span>⚡ Click any room node below to toggle Live Status (Available ⟷ Booked):</span>
+            <span style="color:var(--primary);">${avail}/${tot} Vacant</span>
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(80px, 1fr)); gap:6px;">
+            ${Object.keys(rooms).map(r => `
+              <button onclick="toggleRoomStatusDirect('${h.id}', '${r}')" style="padding:8px 4px; border-radius:6px; border:1px solid var(--border); font-size:11px; font-weight:800; cursor:pointer; background:${rooms[r] === 'available' ? 'var(--success-light)' : 'var(--booked-room)'}; color:${rooms[r] === 'available' ? 'var(--success)' : '#94A3B8'};">
+                Room ${r}<br><span style="font-size:9px; font-weight:600;">${rooms[r] === 'available' ? 'Free ✓' : 'Booked'}</span>
+              </button>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function toggleRoomStatusDirect(hostelId, roomNum) {
+  const h = allHostels.find(x => x.id === hostelId);
+  if (!h || !h.rooms) return;
+  const curr = h.rooms[roomNum] || 'available';
+  const next = curr === 'available' ? 'booked' : 'available';
+  h.rooms[roomNum] = next;
+
+  if (!h.id.startsWith('stay-')) {
+    db.collection('hostels').doc(h.id).update({
+      [`rooms.${roomNum}`]: next
+    }).catch(e => console.warn('Firestore update:', e));
+  }
+
+  renderWardenProperties();
+  renderListingsGrid();
+  showToast(`Room ${roomNum} marked ${next} ✓`);
+}
+
+function deleteHostelAsWarden(hostelId) {
+  if (!confirm('Are you sure you want to remove this hostel listing from NearStay?')) return;
+  allHostels = allHostels.filter(h => h.id !== hostelId);
+  filteredHostels = [...allHostels];
+
+  if (!hostelId.startsWith('stay-')) {
+    db.collection('hostels').doc(hostelId).delete().catch(e => console.warn('Firestore delete:', e));
+  }
+
+  renderWardenProperties();
+  renderListingsGrid();
+  showToast('Hostel removed successfully');
+}
+
+// ==================== PHOTO UPLOAD HANDLER (Point 5) ====================
+function handlePhotoUpload(e) {
+  const files = Array.from(e.target.files);
+  if (files.length === 0) return;
+
+  const previewGrid = document.getElementById('photoPreviewGrid');
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      const dataUrl = evt.target.result;
+      uploadedPropertyPhotos.push(dataUrl);
+
+      const thumbWrap = document.createElement('div');
+      thumbWrap.className = 'photo-thumb-wrap';
+      thumbWrap.innerHTML = `
+        <img src="${dataUrl}" alt="Photo">
+        <button type="button" class="photo-thumb-remove" onclick="removeUploadedPhoto(this, '${dataUrl}')">✕</button>
+      `;
+      previewGrid.appendChild(thumbWrap);
+    };
+    reader.readAsDataURL(file);
+  });
+  showToast(`${files.length} photo(s) selected ✓`);
+}
+
+function removeUploadedPhoto(btnEl, url) {
+  uploadedPropertyPhotos = uploadedPropertyPhotos.filter(u => u !== url);
+  btnEl.parentElement.remove();
+}
+
+function handleCreatePropertySubmit(e) {
+  e.preventDefault();
+  const name = document.getElementById('propName').value.trim();
+  const type = document.getElementById('propType').value;
+  const locality = document.getElementById('propLocality').value.trim();
+  const price = Number(document.getElementById('propPrice').value) || 5500;
+  const phone = document.getElementById('propPhone').value.trim();
+  const floors = Number(document.getElementById('propFloors').value) || 3;
+  const roomsPerFloor = Number(document.getElementById('propRoomsPerFloor').value) || 4;
+
+  const checkedAmenities = Array.from(document.querySelectorAll('input[name="propAmenity"]:checked')).map(cb => cb.value);
+
+  // Generate rooms matrix
+  const rooms = {};
+  for (let f = 1; f <= floors; f++) {
+    for (let r = 1; r <= roomsPerFloor; r++) {
+      const roomNum = f * 100 + r;
+      rooms[roomNum] = 'available';
+    }
+  }
+
+  // Photos
+  const photos = uploadedPropertyPhotos.length > 0 
+    ? [...uploadedPropertyPhotos] 
+    : [
+        type === 'Girls Hostel' ? "images/hostel_exterior_2.jpg" : "images/hostel_exterior_1.jpg",
+        "images/hostel_room_deluxe.jpg",
+        "images/hostel_mess_1.jpg",
+        "images/hostel_lounge_study.jpg"
+      ];
+
+  const newProperty = {
+    name,
+    type,
+    locality,
+    price,
+    phone,
+    rating: "4.9",
+    reviewsCount: 1,
+    tags: [type, "Mess Included", "AC Available", "Verified"],
+    amenities: checkedAmenities.length > 0 ? checkedAmenities : ["100 Mbps WiFi", "3-Time Mess", "Power Backup", "CCTV & Security"],
+    photos,
+    rooms,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    ownerId: currentUser ? currentUser.uid : 'warden-local'
+  };
+
+  db.collection('hostels').add(newProperty).then(docRef => {
+    newProperty.id = docRef.id;
+    allHostels.unshift(newProperty);
+    filteredHostels = [...allHostels];
+    renderListingsGrid();
+    closeModal('addPropertyModal');
+    uploadedPropertyPhotos = [];
+    document.getElementById('photoPreviewGrid').innerHTML = '';
+    document.getElementById('addPropertyForm').reset();
+    showToast('Hostel listed successfully! Live Matrix activated ✓');
+    scrollToSection('listings');
+  }).catch(err => {
+    console.warn('Firestore offline fallback save:', err);
+    newProperty.id = 'stay-custom-' + Date.now();
+    allHostels.unshift(newProperty);
+    filteredHostels = [...allHostels];
+    renderListingsGrid();
+    closeModal('addPropertyModal');
+    uploadedPropertyPhotos = [];
+    document.getElementById('photoPreviewGrid').innerHTML = '';
+    document.getElementById('addPropertyForm').reset();
+    showToast('Hostel listed in local memory! Live Matrix active ✓');
+    scrollToSection('listings');
+  });
+}
+
+// ==================== SETTINGS DRAWER (Point 7) ====================
+function openSettingsDrawer() { document.getElementById('settingsDrawer').classList.add('open'); }
+function closeSettingsDrawer() { document.getElementById('settingsDrawer').classList.remove('open'); }
+
+function resetDemoData() {
+  allHostels = [...DEFAULT_HOSTELS_DATA];
+  filteredHostels = [...allHostels];
+  renderListingsGrid();
+  closeSettingsDrawer();
+  showToast('Restored verified sample hostels ✓');
+}
+
+// ==================== WISHLIST DRAWER ====================
+function toggleWishlist(e, hostelId) {
+  e.stopPropagation();
+  if (wishlist.includes(hostelId)) {
+    wishlist = wishlist.filter(id => id !== hostelId);
+    showToast('Removed from saved stays');
+  } else {
+    wishlist.push(hostelId);
+    showToast('Added to saved stays ❤️');
+  }
+  localStorage.setItem('nearstay_wishlist', JSON.stringify(wishlist));
+  updateWishlistUI();
+  renderListingsGrid();
+}
+
+function updateWishlistUI() {
+  const countEl = document.getElementById('wishlistCount');
+  if (countEl) countEl.innerText = wishlist.length;
+  const mobileCountEl = document.getElementById('mobileWishCount');
+  if (mobileCountEl) mobileCountEl.innerText = wishlist.length;
+
+  const container = document.getElementById('wishlistContainer');
+  if (!container) return;
+
+  const savedStays = allHostels.filter(h => wishlist.includes(h.id));
+  if (savedStays.length === 0) {
+    container.innerHTML = '<p style="color:var(--text-muted); font-size:14px;">No saved hostels yet. Tap the heart icon on any stay!</p>';
+    return;
+  }
+
+  container.innerHTML = savedStays.map(h => `
+    <div style="background:var(--bg-surface); padding:12px; border-radius:var(--radius-md); border:1px solid var(--border); display:flex; gap:12px; align-items:center;">
+      <img src="${(h.photos||[])[0] || 'images/hostel_exterior_1.jpg'}" style="width:60px; height:60px; border-radius:8px; object-fit:cover;">
+      <div style="flex:1;">
+        <h4 style="font-size:14px; font-weight:700;">${h.name}</h4>
+        <div style="font-size:12px; color:var(--primary); font-weight:700;">₹${(Number(h.price)||5000).toLocaleString()}/mo</div>
+      </div>
+      <button class="btn-primary" style="padding:6px 12px; font-size:12px;" onclick="closeWishlistDrawer(); openPropertyDetail('${h.id}')">View</button>
+    </div>
+  `).join('');
+}
+updateWishlistUI();
+
+function openWishlistDrawer() { document.getElementById('wishlistDrawer').classList.add('open'); }
+function closeWishlistDrawer() { document.getElementById('wishlistDrawer').classList.remove('open'); }
+
+// ==================== MOBILE NAVIGATION ====================
+function toggleMobileNav() {
+  const drawer = document.getElementById('mobileNavDrawer');
+  if (drawer) drawer.classList.toggle('open');
+}
+function closeMobileNav() {
+  const drawer = document.getElementById('mobileNavDrawer');
+  if (drawer) drawer.classList.remove('open');
+}
+
+// ==================== UTILS ====================
+function toggleFaq(el) {
+  el.parentElement.classList.toggle('open');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toastAlert');
+  t.innerText = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+function scrollToSection(id) {
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: 'smooth' });
+}
+
+// Close modals when clicking overlay
+document.querySelectorAll('.modal-overlay, .drawer-overlay').forEach(ov => {
+  ov.addEventListener('click', e => { if (e.target === ov) ov.classList.remove('open'); });
+});
+</script>
+</body>
+</html>

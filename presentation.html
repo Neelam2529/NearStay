@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEARSTAY — FSD Lab Project Presentation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0B0F19;
+    --dark-card: #151D2E;
+    --teal: #0D9488;
+    --teal-light: #14B8A6;
+    --amber: #F59E0B;
+    --red: #EF4444;
+    --text-dark: #0F172A;
+    --text-muted: #475569;
+    --bg-light: #F8FAFC;
+    --card-bg: #FFFFFF;
+    --border: #E2E8F0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #060911;
+    color: var(--text-dark);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .deck-wrapper {
+    width: 100%;
+    max-width: 1140px;
+    aspect-ratio: 16 / 9;
+    background: var(--bg-light);
+    border-radius: 20px;
+    box-shadow: 0 30px 60px -15px rgba(0,0,0,0.8);
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .slide {
+    flex: 1;
+    display: none;
+    padding: 38px 46px 60px;
+    flex-direction: column;
+    animation: fadeIn 0.25s ease-out;
+  }
+  .slide.active { display: flex; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* SLIDE 1 HERO THEME */
+  .slide-hero {
+    background: var(--navy);
+    color: #FFFFFF;
+    padding: 40px 50px 60px;
+  }
+  .hero-layout {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 36px;
+    align-items: center;
+    height: 100%;
+  }
+
+  .hero-tag {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: var(--teal-light);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .hero-brand {
+    font-size: 52px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    color: #FFFFFF;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .hero-tagline {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--amber);
+    font-style: italic;
+    margin-bottom: 14px;
+  }
+  .hero-desc {
+    font-size: 13px;
+    color: #94A3B8;
+    line-height: 1.6;
+    margin-bottom: 24px;
+    max-width: 480px;
+  }
+
+  .team-box {
+    background: var(--dark-card);
+    border: 1px solid #243048;
+    border-radius: 12px;
+    padding: 16px 20px;
+  }
+  .team-box-title {
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--teal-light);
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+  }
+  .team-members-text {
+    font-size: 14px;
+    font-weight: 700;
+    color: #FFFFFF;
+    line-height: 1.7;
+  }
+  .team-dept {
+    font-size: 11px;
+    color: #64748B;
+    margin-top: 6px;
+  }
+
+  .hero-image-frame {
+    height: 100%;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid #243048;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+  }
+  .hero-image-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* SLIDES 2-7 COMMON HEADER */
+  .slide-top-header {
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 12px;
+  }
+  .slide-top-cat {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: var(--teal);
+    text-transform: uppercase;
+  }
+  .slide-top-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--text-dark);
+    margin-top: 2px;
+  }
+
+  /* SPLIT CONTENT & IMAGE LAYOUT */
+  .split-layout {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 28px;
+    flex: 1;
+    align-items: center;
+  }
+
+  .points-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .point-box {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 18px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+  }
+  .point-box.red-border { border-left: 4px solid var(--red); }
+  .point-box.teal-border { border-left: 4px solid var(--teal); }
+
+  .point-box h4 {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .point-box p {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .slide-side-img {
+    height: 380px;
+    width: 100%;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+  }
+  .slide-side-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* 4-COLUMN TECH STACK */
+  .tech-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    flex: 1;
+  }
+  .tech-column {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+  }
+  .tech-column-badge {
+    background: var(--navy);
+    color: var(--teal-light);
+    font-size: 10px;
+    font-weight: 800;
+    padding: 5px;
+    border-radius: 6px;
+    text-align: center;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .tech-column h4 {
+    font-size: 13px;
+    font-weight: 800;
+    text-align: center;
+    color: var(--text-dark);
+    margin-bottom: 12px;
+  }
+  .tech-column ul {
+    list-style: none;
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+
+  /* ROADMAP 3-COLUMNS */
+  .roadmap-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    flex: 1;
+  }
+  .phase-col {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+  }
+  .phase-tag {
+    font-size: 10px;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 6px;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  .phase-col h4 {
+    font-size: 14px;
+    font-weight: 800;
+    text-align: center;
+    margin-bottom: 12px;
+    color: var(--text-dark);
+  }
+  .phase-col ul {
+    list-style: none;
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.8;
+  }
+
+  /* IMPACT 2-BOX */
+  .impact-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    flex: 1;
+  }
+  .impact-box {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px;
+  }
+  .impact-box h4 {
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    margin-bottom: 14px;
+  }
+  .impact-box ul {
+    list-style: none;
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.9;
+  }
+
+  /* DECK CONTROLS FOOTER */
+  .deck-footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 12px 30px;
+    background: rgba(255,255,255,0.95);
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted);
+    backdrop-filter: blur(8px);
+  }
+  .nav-btn {
+    padding: 6px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .nav-btn:hover { background: var(--navy); color: #FFF; }
+</style>
+</head>
+<body>
+
+<div class="deck-wrapper">
+
+  <!-- SLIDE 1: TITLE SLIDE (Showstopper) -->
+  <div class="slide slide-hero active" id="slide-1">
+    <div class="hero-layout">
+      <div>
+        <div class="hero-tag">Full Stack Development (FSD) Lab Project</div>
+        <div class="hero-brand">NEARSTAY</div>
+        <div class="hero-tagline">One App. Every Room Nearby.</div>
+        <div class="hero-desc">
+          A real-time full stack web platform connecting students with verified hostels & PGs with live room availability, transparent pricing & zero brokerage.
+        </div>
+
+        <div class="team-box">
+          <div class="team-box-title">PROJECT CONTRIBUTORS</div>
+          <div class="team-members-text">
+            1. Neelam Jashwanth &nbsp;(Roll No: 24CSB0A49)<br>
+            2. Venu Gopala Dasari &nbsp;(Roll No: 24CSB0A84)
+          </div>
+          <div class="team-dept">Dept. of Computer Science & Engineering (CSE)</div>
+        </div>
+      </div>
+
+      <div class="hero-image-frame">
+        <img src="images/hostel_exterior_1.jpg" alt="NearStay Hero">
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 2: THE PROBLEM -->
+  <div class="slide" id="slide-2">
+    <div class="slide-top-header">
+      <div class="slide-top-cat">Current Reality</div>
+      <div class="slide-top-title">The Problem: Why Student Accommodation Hunting is Broken</div>
+    </div>
+    <div class="split-layout">
+      <div class="points-stack">
+        <div class="point-box red-border">
+          <h4 style="color:var(--red);">1. Blind & Exhausting Offline Search</h4>
+          <p>Students migrating to college walk 10-15 km in extreme heat checking hostels one-by-one with zero real-time vacancy visibility.</p>
+        </div>
+        <div class="point-box red-border">
+          <h4 style="color:var(--red);">2. Exploitation by Unregistered Brokers</h4>
+          <p>Local offline agents charge 50% to 100% of the first month's rent as heavy brokerage commission without legal guarantees.</p>
+        </div>
+        <div class="point-box red-border">
+          <h4 style="color:var(--red);">3. Outdated Classifieds & Fake Photos</h4>
+          <p>Platforms like OLX and Facebook groups show years-old pictures, dead phone numbers, and uninspected food mess claims.</p>
+        </div>
+      </div>
+      <div class="slide-side-img">
+        <img src="images/hostel_exterior_2.jpg" alt="Hostel Context">
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 3: THE SOLUTION -->
+  <div class="slide" id="slide-3">
+    <div class="slide-top-header">
+      <div class="slide-top-cat">Our Innovation</div>
+      <div class="slide-top-title">The Solution: How NearStay Solves This</div>
+    </div>
+    <div class="split-layout">
+      <div class="points-stack">
+        <div class="point-box teal-border">
+          <h4 style="color:var(--teal);">⚡ Live Room-Level Availability Matrix</h4>
+          <p>Students can view floor-wise vacant rooms in real-time (Green = Available, Dark = Occupied) and pick their exact room before visiting.</p>
+        </div>
+        <div class="point-box teal-border">
+          <h4 style="color:var(--teal);">🛡️ 100% Zero-Brokerage Direct Model</h4>
+          <p>Direct connection between students and verified property wardens with ₹0 platform commission or hidden middleman charges.</p>
+        </div>
+        <div class="point-box teal-border">
+          <h4 style="color:var(--teal);">🍛 Inspected Weekly Food Mess Schedules</h4>
+          <p>Clear 7-day breakfast, lunch, and dinner menus verified on-ground to eliminate food disputes and ensure hygiene.</p>
+        </div>
+      </div>
+      <div class="slide-side-img">
+        <img src="images/hostel_room_deluxe.jpg" alt="Deluxe Room Interior">
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 4: SYSTEM ARCHITECTURE -->
+  <div class="slide" id="slide-4">
+    <div class="slide-top-header">
+      <div class="slide-top-cat">Engineering Stack</div>
+      <div class="slide-top-title">Full Stack System Architecture & Technologies</div>
+    </div>
+    <div class="tech-grid">
+      <div class="tech-column">
+        <div class="tech-column-badge">1. FRONTEND UI</div>
+        <h4>HTML5 · CSS3 · JS</h4>
+        <ul>
+          <li>• Modular Semantic Layout</li>
+          <li>• Custom CSS Design Tokens</li>
+          <li>• Dark / Light Theme Engine</li>
+          <li>• Touch Photo Carousels</li>
+        </ul>
+      </div>
+      <div class="tech-column">
+        <div class="tech-column-badge">2. BACKEND & LOGIC</div>
+        <h4>Node.js · Firebase API</h4>
+        <ul>
+          <li>• Student & Warden Auth</li>
+          <li>• Dynamic Pricing Logic</li>
+          <li>• Coupon Verification</li>
+          <li>• Real-Time Event Sync</li>
+        </ul>
+      </div>
+      <div class="tech-column">
+        <div class="tech-column-badge">3. DATABASE LAYER</div>
+        <h4>Cloud Firestore</h4>
+        <ul>
+          <li>• NoSQL Document Store</li>
+          <li>• `onSnapshot` Live Streams</li>
+          <li>• Atomic Room State Locks</li>
+          <li>• Sub-second Latency Sync</li>
+        </ul>
+      </div>
+      <div class="tech-column">
+        <div class="tech-column-badge">4. HOSTING & CLOUD</div>
+        <h4>Firebase Edge CDN</h4>
+        <ul>
+          <li>• Global Edge Delivery</li>
+          <li>• 256-bit SSL Security</li>
+          <li>• 99.9% Uptime SLA</li>
+          <li>• Zero Server Maintenance</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 5: CORE FEATURES (Dual Images) -->
+  <div class="slide" id="slide-5">
+    <div class="slide-top-header">
+      <div class="slide-top-cat">Live Functionalities</div>
+      <div class="slide-top-title">Core System Modules & Key Features</div>
+    </div>
+    <div class="split-layout">
+      <div class="point-box" style="padding:22px;">
+        <h4 style="color:var(--teal); font-size:15px; margin-bottom:12px;">KEY WORKING MODULES:</h4>
+        <ul style="list-style:none; font-size:13px; color:var(--text-muted); line-height:2;">
+          <li>• <strong>Smart Search & Campus Filters:</strong> Search by locality (NIT Warangal, Kazipet, Subedari), sharing & budget.</li>
+          <li>• <strong>Live Room Booking Matrix:</strong> Real-time floor grid to select and lock exact vacant rooms.</li>
+          <li>• <strong>Audited Mess Menus:</strong> 7-day verified breakfast, lunch, and dinner schedules.</li>
+          <li>• <strong>Digital Boarding Pass:</strong> Official invoice with unique ID, QR code & warden calling.</li>
+        </ul>
+      </div>
+      <div style="display:grid; grid-template-rows:1fr 1fr; gap:12px; height:380px;">
+        <div style="border-radius:12px; overflow:hidden; border:1px solid var(--border);"><img src="images/hostel_mess_1.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+        <div style="border-radius:12px; overflow:hidden; border:1px solid var(--border);"><img src="images/hostel_lounge_study.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 6: PROJECT ROADMAP -->
+  <div class="slide" id="slide-6">
+    <div class="slide-top-header">
+      <div class="slide-top-cat">Project Milestones</div>
+      <div class="slide-top-title">Implementation Roadmap & Current Progress</div>
+    </div>
+    <div class="roadmap-grid">
+      <div class="phase-col">
+        <div class="phase-tag" style="background:#D1FAE5; color:#059669;">PHASE 1 : COMPLETED</div>
+        <h4>Frontend & UI Experience</h4>
+        <ul>
+          <li>• Responsive glassmorphism interface</li>
+          <li>• Multi-photo card carousel</li>
+          <li>• Detail lightbox modal & tabs</li>
+          <li>• Dark/Light theme toggle</li>
+        </ul>
+      </div>
+      <div class="phase-col">
+        <div class="phase-tag" style="background:#FEF3C7; color:#D97706;">PHASE 2 : IN PROGRESS</div>
+        <h4>Real-Time Database & Logic</h4>
+        <ul>
+          <li>• Cloud Firestore NoSQL models</li>
+          <li>• Real-time `onSnapshot` sync</li>
+          <li>• Dynamic pricing & coupon logic</li>
+          <li>• Digital booking pass with QR</li>
+        </ul>
+      </div>
+      <div class="phase-col">
+        <div class="phase-tag" style="background:#E0E7FF; color:#4338CA;">PHASE 3 : PLANNED</div>
+        <h4>Deployment & Mobile App</h4>
+        <ul>
+          <li>• SMS/WhatsApp Warden Alerts</li>
+          <li>• Integrated UPI Token Gateway</li>
+          <li>• React Native mobile app</li>
+          <li>• Production Cloud Edge Deploy</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 7: IMPACT & CONCLUSION -->
+  <div class="slide" id="slide-7">
+    <div class="slide-top-header">
+      <div class="slide-top-cat">Impact & Road Ahead</div>
+      <div class="slide-top-title">Project Impact & Future Vision</div>
+    </div>
+    <div class="impact-grid">
+      <div class="impact-box" style="border-left:4px solid var(--teal);">
+        <h4 style="color:var(--teal);">REAL-WORLD VALUE IMPACT</h4>
+        <ul>
+          <li>• Reduces search time from 3-4 days to under 5 minutes.</li>
+          <li>• 100% Zero-Brokerage model eliminates heavy agent fees.</li>
+          <li>• Live room matrix prevents traveling to already-full hostels.</li>
+          <li>• Inspected meal menus & safety badges ensure peace of mind.</li>
+        </ul>
+      </div>
+      <div class="impact-box" style="border-left:4px solid var(--amber);">
+        <h4 style="color:var(--amber);">FUTURE SCOPE & EXPANSION</h4>
+        <ul>
+          <li>• Native Android & iOS Mobile Apps using React Native.</li>
+          <li>• AI-Powered Roommate Compatibility matching.</li>
+          <li>• Direct Online Token Payments via UPI & Razorpay.</li>
+          <li>• Expansion to major educational hubs like Hyderabad & Kota.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTROLS FOOTER -->
+  <div class="deck-footer">
+    <div>Slide <span id="slideIndicator">1</span> of 7 &nbsp;|&nbsp; <strong>NearStay FSD Project</strong></div>
+    <div style="display:flex; gap:10px;">
+      <button class="nav-btn" onclick="navSlide(-1)">◀ Previous</button>
+      <button class="nav-btn" onclick="navSlide(1)">Next ▶</button>
+      <button class="nav-btn" onclick="window.print()">🖨️ Print / Save PDF</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let curSlide = 1;
+  const total = 7;
+
+  function renderSlide(n) {
+    document.querySelectorAll('.slide').forEach((s, i) => s.classList.toggle('active', i + 1 === n));
+    document.getElementById('slideIndicator').innerText = n;
+  }
+
+  function navSlide(dir) {
+    curSlide += dir;
+    if (curSlide < 1) curSlide = 1;
+    if (curSlide > total) curSlide = total;
+    renderSlide(curSlide);
+  }
+
+  window.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'Space') navSlide(1);
+    if (e.key === 'ArrowLeft') navSlide(-1);
+  });
+</script>
+</body>
+</html>

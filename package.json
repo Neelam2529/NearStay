@@ -1,0 +1,11 @@
+{
+  "name": "nearstay",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "dependencies": {
+    "pptxgenjs": "^4.0.1"
+  }
+}
+
