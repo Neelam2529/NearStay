@@ -3101,7 +3101,6 @@ function populatePassModal(b) {
 
 // ==================== AUTHENTICATION & SESSIONS (PRO WEB DEVELOPER GRADE) ====================
 let currentAuthScreen = 'welcome'; // 'welcome' | 'login' | 'register'
-let currentAuthRole = 'student';   // 'student' | 'owner'
 
 function openAuthModal(role, initialScreen) {
   switchAuthRole(role || 'student', false);
@@ -3230,7 +3229,10 @@ function togglePasswordVisibility(inputId, btnEl) {
 
 // Handle Login Submit
 function handleLoginSubmit(event) {
-  if (event) event.preventDefault();
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
   const emailInput = document.getElementById('loginEmail');
   const passInput = document.getElementById('loginPassword');
   const errEl = document.getElementById('loginError');
@@ -3243,34 +3245,45 @@ function handleLoginSubmit(event) {
     return;
   }
 
-  // Firebase auth with fallback to simulated session
-  auth.signInWithEmailAndPassword(email, pass).then(userCred => {
-    const userSession = {
-      role: currentAuthRole,
-      name: email.split('@')[0].replace(/[^a-zA-Z0-9]/g, ' '),
-      phone: '9876543210',
-      college: currentAuthRole === 'student' ? 'NIT Warangal' : 'Hostel Owner',
-      email: email,
-      uid: userCred.user ? userCred.user.uid : 'uid-' + Date.now()
-    };
-    loginUserSession(userSession);
-  }).catch(() => {
-    // Graceful offline/demo login
-    const userSession = {
-      role: currentAuthRole,
-      name: email.split('@')[0].replace(/[^a-zA-Z0-9]/g, ' '),
-      phone: '9876543210',
-      college: currentAuthRole === 'student' ? 'NIT Warangal' : 'Hostel Owner',
-      email: email,
-      uid: 'user-' + Date.now()
-    };
-    loginUserSession(userSession);
-  });
+  const fallbackUser = {
+    role: currentAuthRole,
+    name: email.split('@')[0].replace(/[^a-zA-Z0-9]/g, ' ') || (currentAuthRole === 'owner' ? 'Hostel Owner' : 'Student User'),
+    phone: '9876543210',
+    college: currentAuthRole === 'student' ? 'NIT Warangal' : 'Hostel Owner',
+    email: email,
+    uid: 'user-' + Date.now()
+  };
+
+  try {
+    if (typeof auth !== 'undefined' && auth && typeof auth.signInWithEmailAndPassword === 'function') {
+      auth.signInWithEmailAndPassword(email, pass).then(userCred => {
+        const userSession = {
+          role: currentAuthRole,
+          name: email.split('@')[0].replace(/[^a-zA-Z0-9]/g, ' ') || 'Student User',
+          phone: '9876543210',
+          college: currentAuthRole === 'student' ? 'NIT Warangal' : 'Hostel Owner',
+          email: email,
+          uid: userCred.user ? userCred.user.uid : 'uid-' + Date.now()
+        };
+        loginUserSession(userSession);
+      }).catch(() => {
+        loginUserSession(fallbackUser);
+      });
+    } else {
+      loginUserSession(fallbackUser);
+    }
+  } catch (e) {
+    console.warn('Auth fallback:', e);
+    loginUserSession(fallbackUser);
+  }
 }
 
 // Handle Register Submit
 function handleRegisterSubmit(event) {
-  if (event) event.preventDefault();
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
   const username = document.getElementById('registerUsername')?.value.trim();
   const email = document.getElementById('registerEmail')?.value.trim();
   const password = document.getElementById('registerPassword')?.value;
@@ -3292,28 +3305,37 @@ function handleRegisterSubmit(event) {
     return;
   }
 
-  // Firebase registration with demo fallback
-  auth.createUserWithEmailAndPassword(email, password).then(userCred => {
-    const userSession = {
-      role: currentAuthRole,
-      name: username,
-      phone: '9876543210',
-      college: currentAuthRole === 'student' ? 'NIT Warangal' : 'Hostel Owner',
-      email: email,
-      uid: userCred.user ? userCred.user.uid : 'uid-' + Date.now()
-    };
-    loginUserSession(userSession);
-  }).catch(() => {
-    const userSession = {
-      role: currentAuthRole,
-      name: username,
-      phone: '9876543210',
-      college: currentAuthRole === 'student' ? 'NIT Warangal' : 'Hostel Owner',
-      email: email,
-      uid: 'user-' + Date.now()
-    };
-    loginUserSession(userSession);
-  });
+  const fallbackUser = {
+    role: currentAuthRole,
+    name: username,
+    phone: '9876543210',
+    college: currentAuthRole === 'student' ? 'NIT Warangal' : 'Hostel Owner',
+    email: email,
+    uid: 'user-' + Date.now()
+  };
+
+  try {
+    if (typeof auth !== 'undefined' && auth && typeof auth.createUserWithEmailAndPassword === 'function') {
+      auth.createUserWithEmailAndPassword(email, password).then(userCred => {
+        const userSession = {
+          role: currentAuthRole,
+          name: username,
+          phone: '9876543210',
+          college: currentAuthRole === 'student' ? 'NIT Warangal' : 'Hostel Owner',
+          email: email,
+          uid: userCred.user ? userCred.user.uid : 'uid-' + Date.now()
+        };
+        loginUserSession(userSession);
+      }).catch(() => {
+        loginUserSession(fallbackUser);
+      });
+    } else {
+      loginUserSession(fallbackUser);
+    }
+  } catch (e) {
+    console.warn('Register fallback:', e);
+    loginUserSession(fallbackUser);
+  }
 }
 
 // ==================== INTERACTIVE OAUTH POPUP (GOOGLE, APPLE, FACEBOOK) ====================
